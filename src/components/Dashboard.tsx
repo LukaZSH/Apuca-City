@@ -1,62 +1,17 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import Header from './Header';
 import ProblemCard from './ProblemCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-
-interface Problem {
-  id: string;
-  type: string;
-  description: string;
-  location: string;
-  date: string;
-  status: 'pending' | 'in_progress' | 'resolved';
-  likes: number;
-}
+import { useProblems } from '@/hooks/useProblems';
 
 interface DashboardProps {
   onNewReport: () => void;
 }
 
 const Dashboard = ({ onNewReport }: DashboardProps) => {
-  const [problems, setProblems] = useState<Problem[]>([
-    {
-      id: '1',
-      type: 'Buraco na rua',
-      description: 'Buraco grande na Rua das Flores causando transtornos aos motoristas',
-      location: 'Rua das Flores, 123 - Centro',
-      date: '01/06/2025',
-      status: 'pending',
-      likes: 12
-    },
-    {
-      id: '2',
-      type: 'Iluminação pública',
-      description: 'Poste de luz queimado há mais de uma semana',
-      location: 'Av. Principal, 456 - Jardim',
-      date: '31/05/2025',
-      status: 'in_progress',
-      likes: 8
-    },
-    {
-      id: '3',
-      type: 'Lixo acumulado',
-      description: 'Lixo acumulado na esquina causando mau cheiro',
-      location: 'Rua do Comércio, 789 - Vila Nova',
-      date: '30/05/2025',
-      status: 'resolved',
-      likes: 5
-    }
-  ]);
-
-  const handleLike = (id: string) => {
-    setProblems(problems.map(problem => 
-      problem.id === id 
-        ? { ...problem, likes: problem.likes + 1 }
-        : problem
-    ));
-  };
+  const { problems, loading, toggleLike } = useProblems();
 
   const filterByStatus = (status?: string) => {
     if (!status) return problems;
@@ -66,6 +21,36 @@ const Dashboard = ({ onNewReport }: DashboardProps) => {
   const getStatusCount = (status: string) => {
     return problems.filter(problem => problem.status === status).length;
   };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
+  const getTypeDisplayName = (type: string) => {
+    const typeMap: { [key: string]: string } = {
+      'buraco_na_rua': 'Buraco na rua',
+      'lixo_acumulado': 'Lixo acumulado',
+      'vandalismo': 'Vandalismo',
+      'iluminacao_publica': 'Iluminação pública',
+      'sinalizacao_danificada': 'Sinalização danificada',
+      'calcada_danificada': 'Calçada danificada',
+      'outro': 'Outro'
+    };
+    return typeMap[type] || type;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header onNewReport={onNewReport} />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-gray-500">Carregando problemas...</div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -114,11 +99,26 @@ const Dashboard = ({ onNewReport }: DashboardProps) => {
               {problems.map((problem) => (
                 <ProblemCard
                   key={problem.id}
-                  problem={problem}
-                  onLike={handleLike}
+                  problem={{
+                    id: problem.id,
+                    type: getTypeDisplayName(problem.type),
+                    description: problem.title,
+                    location: problem.location_address,
+                    date: formatDate(problem.created_at),
+                    status: problem.status,
+                    likes: problem.likes_count,
+                    userHasLiked: problem.user_has_liked
+                  }}
+                  onLike={toggleLike}
                 />
               ))}
             </div>
+            {problems.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Nenhum problema foi relatado ainda.</p>
+                <p className="text-gray-400 text-sm mt-1">Seja o primeiro a relatar um problema!</p>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="pending" className="space-y-4">
@@ -126,8 +126,17 @@ const Dashboard = ({ onNewReport }: DashboardProps) => {
               {filterByStatus('pending').map((problem) => (
                 <ProblemCard
                   key={problem.id}
-                  problem={problem}
-                  onLike={handleLike}
+                  problem={{
+                    id: problem.id,
+                    type: getTypeDisplayName(problem.type),
+                    description: problem.title,
+                    location: problem.location_address,
+                    date: formatDate(problem.created_at),
+                    status: problem.status,
+                    likes: problem.likes_count,
+                    userHasLiked: problem.user_has_liked
+                  }}
+                  onLike={toggleLike}
                 />
               ))}
             </div>
@@ -138,8 +147,17 @@ const Dashboard = ({ onNewReport }: DashboardProps) => {
               {filterByStatus('in_progress').map((problem) => (
                 <ProblemCard
                   key={problem.id}
-                  problem={problem}
-                  onLike={handleLike}
+                  problem={{
+                    id: problem.id,
+                    type: getTypeDisplayName(problem.type),
+                    description: problem.title,
+                    location: problem.location_address,
+                    date: formatDate(problem.created_at),
+                    status: problem.status,
+                    likes: problem.likes_count,
+                    userHasLiked: problem.user_has_liked
+                  }}
+                  onLike={toggleLike}
                 />
               ))}
             </div>
@@ -150,8 +168,17 @@ const Dashboard = ({ onNewReport }: DashboardProps) => {
               {filterByStatus('resolved').map((problem) => (
                 <ProblemCard
                   key={problem.id}
-                  problem={problem}
-                  onLike={handleLike}
+                  problem={{
+                    id: problem.id,
+                    type: getTypeDisplayName(problem.type),
+                    description: problem.title,
+                    location: problem.location_address,
+                    date: formatDate(problem.created_at),
+                    status: problem.status,
+                    likes: problem.likes_count,
+                    userHasLiked: problem.user_has_liked
+                  }}
+                  onLike={toggleLike}
                 />
               ))}
             </div>

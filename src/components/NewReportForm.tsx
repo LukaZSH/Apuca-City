@@ -7,38 +7,84 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MapPin, Plus } from 'lucide-react';
+import { useProblems } from '@/hooks/useProblems';
+import { toast } from 'sonner';
 
 interface NewReportFormProps {
-  onSubmit: (report: any) => void;
+  onSubmit: () => void;
   onCancel: () => void;
 }
 
 const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
   const [formData, setFormData] = useState({
     type: '',
+    title: '',
     description: '',
-    location: '',
+    location_address: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { createProblem } = useProblems();
 
   const problemTypes = [
-    'Buraco na rua',
-    'Lixo acumulado',
-    'Vandalismo',
-    'Iluminação pública',
-    'Sinalização danificada',
-    'Calçada danificada',
-    'Outro'
+    { value: 'buraco_na_rua', label: 'Buraco na rua' },
+    { value: 'lixo_acumulado', label: 'Lixo acumulado' },
+    { value: 'vandalismo', label: 'Vandalismo' },
+    { value: 'iluminacao_publica', label: 'Iluminação pública' },
+    { value: 'sinalizacao_danificada', label: 'Sinalização danificada' },
+    { value: 'calcada_danificada', label: 'Calçada danificada' },
+    { value: 'outro', label: 'Outro' }
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      ...formData,
-      id: Date.now().toString(),
-      date: new Date().toLocaleDateString('pt-BR'),
-      status: 'pending',
-      likes: 0
-    });
+    
+    if (!formData.type || !formData.title || !formData.description || !formData.location_address) {
+      toast.error('Por favor, preencha todos os campos obrigatórios');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await createProblem(formData);
+      
+      if (error) {
+        console.error('Error creating problem:', error);
+        toast.error('Erro ao criar relato. Tente novamente.');
+      } else {
+        toast.success('Relato criado com sucesso!');
+        onSubmit();
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error('Erro inesperado. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      toast.info('Obtendo localização...');
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // Em uma implementação real, você usaria reverse geocoding para converter coordenadas em endereço
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          setFormData(prev => ({
+            ...prev,
+            location_address: `Localização atual (${lat.toFixed(6)}, ${lng.toFixed(6)})`
+          }));
+          toast.success('Localização obtida com sucesso!');
+        },
+        (error) => {
+          console.error('Geolocation error:', error);
+          toast.error('Não foi possível obter a localização. Digite o endereço manualmente.');
+        }
+      );
+    } else {
+      toast.error('Geolocalização não é suportada neste navegador');
+    }
   };
 
   return (
@@ -57,15 +103,15 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="type">Tipo de problema</Label>
+                <Label htmlFor="type">Tipo de problema *</Label>
                 <Select onValueChange={(value) => setFormData({...formData, type: value})}>
                   <SelectTrigger className="h-12">
                     <SelectValue placeholder="Selecione o tipo de problema" />
                   </SelectTrigger>
                   <SelectContent>
                     {problemTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -73,7 +119,19 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="description">Descrição</Label>
+                <Label htmlFor="title">Título do problema *</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  placeholder="Ex: Buraco grande na rua causando transtornos"
+                  className="h-12"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Descrição *</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
@@ -85,18 +143,19 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="location">Localização</Label>
+                <Label htmlFor="location">Localização *</Label>
                 <div className="relative">
                   <Input
                     id="location"
-                    value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    value={formData.location_address}
+                    onChange={(e) => setFormData({...formData, location_address: e.target.value})}
                     placeholder="Digite o endereço ou use o GPS"
                     className="h-12 pr-12"
                     required
                   />
                   <button
                     type="button"
+                    onClick={getCurrentLocation}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-700"
                   >
                     <MapPin className="w-5 h-5" />
@@ -109,7 +168,7 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer">
                   <Plus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                   <p className="text-gray-600">Clique para adicionar fotos</p>
-                  <p className="text-xs text-gray-400 mt-1">Até 5 fotos (JPG, PNG)</p>
+                  <p className="text-xs text-gray-400 mt-1">Até 5 fotos (JPG, PNG) - Em breve!</p>
                 </div>
               </div>
               
@@ -119,14 +178,16 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
                   variant="outline"
                   onClick={onCancel}
                   className="flex-1 h-12"
+                  disabled={isSubmitting}
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   className="flex-1 h-12 bg-blue-600 hover:bg-blue-700"
+                  disabled={isSubmitting}
                 >
-                  Enviar relato
+                  {isSubmitting ? 'Enviando...' : 'Enviar relato'}
                 </Button>
               </div>
             </form>

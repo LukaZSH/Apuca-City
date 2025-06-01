@@ -9,6 +9,109 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      problem_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          problem_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          problem_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          problem_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "problem_images_problem_id_fkey"
+            columns: ["problem_id"]
+            isOneToOne: false
+            referencedRelation: "problems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      problem_likes: {
+        Row: {
+          created_at: string
+          id: string
+          problem_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          problem_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          problem_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "problem_likes_problem_id_fkey"
+            columns: ["problem_id"]
+            isOneToOne: false
+            referencedRelation: "problems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      problems: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          latitude: number | null
+          likes_count: number
+          location_address: string
+          longitude: number | null
+          status: Database["public"]["Enums"]["problem_status"]
+          title: string
+          type: Database["public"]["Enums"]["problem_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          latitude?: number | null
+          likes_count?: number
+          location_address: string
+          longitude?: number | null
+          status?: Database["public"]["Enums"]["problem_status"]
+          title: string
+          type: Database["public"]["Enums"]["problem_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          latitude?: number | null
+          likes_count?: number
+          location_address?: string
+          longitude?: number | null
+          status?: Database["public"]["Enums"]["problem_status"]
+          title?: string
+          type?: Database["public"]["Enums"]["problem_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -44,7 +147,15 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      problem_status: "pending" | "in_progress" | "resolved"
+      problem_type:
+        | "buraco_na_rua"
+        | "lixo_acumulado"
+        | "vandalismo"
+        | "iluminacao_publica"
+        | "sinalizacao_danificada"
+        | "calcada_danificada"
+        | "outro"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -159,6 +270,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      problem_status: ["pending", "in_progress", "resolved"],
+      problem_type: [
+        "buraco_na_rua",
+        "lixo_acumulado",
+        "vandalismo",
+        "iluminacao_publica",
+        "sinalizacao_danificada",
+        "calcada_danificada",
+        "outro",
+      ],
+    },
   },
 } as const

@@ -1,23 +1,52 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowUp } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
-interface LoginProps {
-  onLogin: () => void;
-}
-
-const Login = ({ onLogin }: LoginProps) => {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { signIn, signUp } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin();
+    setIsLoading(true);
+
+    try {
+      if (isSignUp) {
+        const { error } = await signUp(email, password, fullName);
+        if (error) {
+          if (error.message.includes('already registered')) {
+            toast.error('Este e-mail já está cadastrado. Tente fazer login.');
+          } else {
+            toast.error(error.message || 'Erro ao criar conta');
+          }
+        } else {
+          toast.success('Conta criada com sucesso! Verifique seu e-mail.');
+        }
+      } else {
+        const { error } = await signIn(email, password);
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            toast.error('E-mail ou senha incorretos');
+          } else {
+            toast.error(error.message || 'Erro ao fazer login');
+          }
+        }
+      }
+    } catch (error) {
+      toast.error('Erro inesperado. Tente novamente.');
+      console.error('Auth error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -35,6 +64,21 @@ const Login = ({ onLogin }: LoginProps) => {
         
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isSignUp && (
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Nome completo</Label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="h-12"
+                  placeholder="Digite seu nome completo"
+                  required={isSignUp}
+                />
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>
               <Input
@@ -56,13 +100,18 @@ const Login = ({ onLogin }: LoginProps) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="h-12"
-                placeholder="Digite sua senha"
+                placeholder={isSignUp ? "Crie uma senha (mín. 6 caracteres)" : "Digite sua senha"}
+                minLength={isSignUp ? 6 : undefined}
                 required
               />
             </div>
             
-            <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium">
-              {isSignUp ? 'Criar conta' : 'Entrar'}
+            <Button 
+              type="submit" 
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Carregando...' : (isSignUp ? 'Criar conta' : 'Entrar')}
             </Button>
           </form>
           
@@ -70,6 +119,7 @@ const Login = ({ onLogin }: LoginProps) => {
             <button
               onClick={() => setIsSignUp(!isSignUp)}
               className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              disabled={isLoading}
             >
               {isSignUp ? 'Já tem uma conta? Faça login' : 'Não tem conta? Cadastre-se'}
             </button>

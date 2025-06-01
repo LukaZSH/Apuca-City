@@ -3,21 +3,17 @@ import React, { useState } from 'react';
 import Login from '@/components/Login';
 import Dashboard from '@/components/Dashboard';
 import NewReportForm from '@/components/NewReportForm';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, loading } = useAuth();
   const [currentView, setCurrentView] = useState<'dashboard' | 'new-report'>('dashboard');
-
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-  };
 
   const handleNewReport = () => {
     setCurrentView('new-report');
   };
 
-  const handleReportSubmit = (report: any) => {
-    console.log('Novo relato:', report);
+  const handleReportSubmit = () => {
     setCurrentView('dashboard');
   };
 
@@ -25,8 +21,16 @@ const Index = () => {
     setCurrentView('dashboard');
   };
 
-  if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} />;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-500">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
   }
 
   if (currentView === 'new-report') {

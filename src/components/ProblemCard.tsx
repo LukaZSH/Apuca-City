@@ -12,6 +12,7 @@ interface Problem {
   date: string;
   status: 'pending' | 'in_progress' | 'resolved';
   likes: number;
+  userHasLiked?: boolean;
   image?: string;
 }
 
@@ -72,9 +73,13 @@ const ProblemCard = ({ problem, onLike }: ProblemCardProps) => {
           <span className="text-xs text-gray-400">{problem.date}</span>
           <button
             onClick={() => onLike(problem.id)}
-            className="flex items-center space-x-1 text-gray-500 hover:text-blue-600 transition-colors"
+            className={`flex items-center space-x-1 transition-colors ${
+              problem.userHasLiked 
+                ? 'text-blue-600 hover:text-blue-700' 
+                : 'text-gray-500 hover:text-blue-600'
+            }`}
           >
-            <ArrowUp className="w-4 h-4" />
+            <ArrowUp className={`w-4 h-4 ${problem.userHasLiked ? 'fill-current' : ''}`} />
             <span className="text-sm font-medium">{problem.likes}</span>
           </button>
         </div>
