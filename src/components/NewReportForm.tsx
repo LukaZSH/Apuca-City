@@ -9,6 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MapPin, Plus } from 'lucide-react';
 import { useProblems } from '@/hooks/useProblems';
 import { toast } from 'sonner';
+import { Database } from '@/integrations/supabase/types';
+
+type ProblemType = Database['public']['Enums']['problem_type'];
 
 interface NewReportFormProps {
   onSubmit: () => void;
@@ -17,7 +20,7 @@ interface NewReportFormProps {
 
 const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
   const [formData, setFormData] = useState({
-    type: '',
+    type: '' as ProblemType | '',
     title: '',
     description: '',
     location_address: '',
@@ -26,13 +29,13 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
   const { createProblem } = useProblems();
 
   const problemTypes = [
-    { value: 'buraco_na_rua', label: 'Buraco na rua' },
-    { value: 'lixo_acumulado', label: 'Lixo acumulado' },
-    { value: 'vandalismo', label: 'Vandalismo' },
-    { value: 'iluminacao_publica', label: 'Iluminação pública' },
-    { value: 'sinalizacao_danificada', label: 'Sinalização danificada' },
-    { value: 'calcada_danificada', label: 'Calçada danificada' },
-    { value: 'outro', label: 'Outro' }
+    { value: 'buraco_na_rua' as ProblemType, label: 'Buraco na rua' },
+    { value: 'lixo_acumulado' as ProblemType, label: 'Lixo acumulado' },
+    { value: 'vandalismo' as ProblemType, label: 'Vandalismo' },
+    { value: 'iluminacao_publica' as ProblemType, label: 'Iluminação pública' },
+    { value: 'sinalizacao_danificada' as ProblemType, label: 'Sinalização danificada' },
+    { value: 'calcada_danificada' as ProblemType, label: 'Calçada danificada' },
+    { value: 'outro' as ProblemType, label: 'Outro' }
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,7 +49,12 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await createProblem(formData);
+      const { error } = await createProblem({
+        type: formData.type,
+        title: formData.title,
+        description: formData.description,
+        location_address: formData.location_address
+      });
       
       if (error) {
         console.error('Error creating problem:', error);
@@ -104,7 +112,7 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="type">Tipo de problema *</Label>
-                <Select onValueChange={(value) => setFormData({...formData, type: value})}>
+                <Select onValueChange={(value: ProblemType) => setFormData({...formData, type: value})}>
                   <SelectTrigger className="h-12">
                     <SelectValue placeholder="Selecione o tipo de problema" />
                   </SelectTrigger>

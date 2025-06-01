@@ -2,6 +2,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { Database } from '@/integrations/supabase/types';
+
+type ProblemType = Database['public']['Enums']['problem_type'];
+type ProblemStatus = Database['public']['Enums']['problem_status'];
 
 export interface Problem {
   id: string;
@@ -119,7 +123,7 @@ export const useProblems = () => {
   };
 
   const createProblem = async (problemData: {
-    type: string;
+    type: ProblemType;
     title: string;
     description: string;
     location_address: string;
