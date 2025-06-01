@@ -2,12 +2,16 @@
 import React, { useState } from 'react';
 import Login from '@/components/Login';
 import Dashboard from '@/components/Dashboard';
+import AdminDashboard from '@/components/AdminDashboard';
+import UserProblemsPage from '@/components/UserProblemsPage';
 import NewReportForm from '@/components/NewReportForm';
 import { useAuth } from '@/hooks/useAuth';
 
+type ViewType = 'dashboard' | 'new-report' | 'user-problems' | 'admin-panel';
+
 const Index = () => {
   const { user, loading } = useAuth();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'new-report'>('dashboard');
+  const [currentView, setCurrentView] = useState<ViewType>('dashboard');
 
   const handleNewReport = () => {
     setCurrentView('new-report');
@@ -18,6 +22,18 @@ const Index = () => {
   };
 
   const handleReportCancel = () => {
+    setCurrentView('dashboard');
+  };
+
+  const handleShowUserProblems = () => {
+    setCurrentView('user-problems');
+  };
+
+  const handleShowAdminPanel = () => {
+    setCurrentView('admin-panel');
+  };
+
+  const handleBackToDashboard = () => {
     setCurrentView('dashboard');
   };
 
@@ -33,16 +49,40 @@ const Index = () => {
     return <Login />;
   }
 
-  if (currentView === 'new-report') {
-    return (
-      <NewReportForm
-        onSubmit={handleReportSubmit}
-        onCancel={handleReportCancel}
-      />
-    );
+  switch (currentView) {
+    case 'new-report':
+      return (
+        <NewReportForm
+          onSubmit={handleReportSubmit}
+          onCancel={handleReportCancel}
+        />
+      );
+      
+    case 'user-problems':
+      return (
+        <UserProblemsPage
+          onNewReport={handleNewReport}
+          onBackToDashboard={handleBackToDashboard}
+        />
+      );
+      
+    case 'admin-panel':
+      return (
+        <AdminDashboard
+          onNewReport={handleNewReport}
+          onBackToDashboard={handleBackToDashboard}
+        />
+      );
+      
+    default:
+      return (
+        <Dashboard
+          onNewReport={handleNewReport}
+          onShowUserProblems={handleShowUserProblems}
+          onShowAdminPanel={handleShowAdminPanel}
+        />
+      );
   }
-
-  return <Dashboard onNewReport={handleNewReport} />;
 };
 
 export default Index;

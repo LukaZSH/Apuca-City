@@ -1,21 +1,26 @@
 
 import React from 'react';
-import { Plus, LogOut, User } from 'lucide-react';
+import { Plus, LogOut, User, Settings, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdmin } from '@/hooks/useAdmin';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
 interface HeaderProps {
   onNewReport: () => void;
+  onShowUserProblems?: () => void;
+  onShowAdminPanel?: () => void;
 }
 
-const Header = ({ onNewReport }: HeaderProps) => {
+const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel }: HeaderProps) => {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
 
   const handleSignOut = async () => {
     await signOut();
@@ -50,10 +55,24 @@ const Header = ({ onNewReport }: HeaderProps) => {
                   <User className="w-5 h-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem disabled className="text-xs">
                   {user?.email}
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {onShowUserProblems && (
+                  <DropdownMenuItem onClick={onShowUserProblems}>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Meus relatórios
+                  </DropdownMenuItem>
+                )}
+                {isAdmin && onShowAdminPanel && (
+                  <DropdownMenuItem onClick={onShowAdminPanel}>
+                    <Settings className="w-4 h-4 mr-2" />
+                    Painel administrativo
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
                   <LogOut className="w-4 h-4 mr-2" />
                   Sair
