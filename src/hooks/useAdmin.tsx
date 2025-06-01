@@ -24,18 +24,14 @@ export const useAdmin = () => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .single();
+      // Por enquanto, vamos verificar se o email do usuário está em uma lista de admins
+      // Você pode atualizar esta lista com emails de administradores
+      const adminEmails = [
+        'admin@apucacity.com',
+        'seu-email@exemplo.com' // Adicione seu email aqui
+      ];
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error checking admin status:', error);
-      }
-
-      setIsAdmin(!!data);
+      setIsAdmin(adminEmails.includes(user.email || ''));
     } catch (error) {
       console.error('Error in checkAdminStatus:', error);
       setIsAdmin(false);
