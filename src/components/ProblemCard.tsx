@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, ArrowUp } from 'lucide-react';
+import { MapPin, ArrowUp, Clock } from 'lucide-react';
 
 interface Problem {
   id: string;
@@ -48,6 +48,25 @@ const ProblemCard = ({ problem, onLike }: ProblemCardProps) => {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) {
+      return 'Há poucos minutos';
+    } else if (diffInHours < 24) {
+      return `Há ${diffInHours} hora${diffInHours > 1 ? 's' : ''}`;
+    } else {
+      const diffInDays = Math.floor(diffInHours / 24);
+      if (diffInDays < 7) {
+        return `Há ${diffInDays} dia${diffInDays > 1 ? 's' : ''}`;
+      } else {
+        return date.toLocaleDateString('pt-BR');
+      }
+    }
+  };
+
   return (
     <Card className="hover:shadow-md transition-shadow duration-200 border border-gray-100">
       <CardContent className="p-4">
@@ -64,13 +83,16 @@ const ProblemCard = ({ problem, onLike }: ProblemCardProps) => {
           {problem.description}
         </h3>
         
-        <div className="flex items-center text-gray-500 text-sm mb-3">
+        <div className="flex items-center text-gray-500 text-sm mb-2">
           <MapPin className="w-4 h-4 mr-1" />
           <span className="truncate">{problem.location}</span>
         </div>
         
         <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-400">{problem.date}</span>
+          <div className="flex items-center text-gray-400 text-xs">
+            <Clock className="w-3 h-3 mr-1" />
+            <span>{formatDate(problem.date)}</span>
+          </div>
           <button
             onClick={() => onLike(problem.id)}
             className={`flex items-center space-x-1 transition-colors ${
