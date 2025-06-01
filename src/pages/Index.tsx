@@ -1,14 +1,44 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from 'react';
+import Login from '@/components/Login';
+import Dashboard from '@/components/Dashboard';
+import NewReportForm from '@/components/NewReportForm';
 
 const Index = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentView, setCurrentView] = useState<'dashboard' | 'new-report'>('dashboard');
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+  };
+
+  const handleNewReport = () => {
+    setCurrentView('new-report');
+  };
+
+  const handleReportSubmit = (report: any) => {
+    console.log('Novo relato:', report);
+    setCurrentView('dashboard');
+  };
+
+  const handleReportCancel = () => {
+    setCurrentView('dashboard');
+  };
+
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  if (currentView === 'new-report') {
+    return (
+      <NewReportForm
+        onSubmit={handleReportSubmit}
+        onCancel={handleReportCancel}
+      />
+    );
+  }
+
+  return <Dashboard onNewReport={handleNewReport} />;
 };
 
 export default Index;
