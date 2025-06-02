@@ -23,20 +23,15 @@ export const useAdmin = () => {
     }
 
     try {
-      // Check if user has admin role using a simple query
+      // Usar a nova função is_admin do banco
       const { data, error } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle();
+        .rpc('is_admin', { user_id: user.id });
 
       if (error) {
         console.error('Error checking admin status:', error);
         setIsAdmin(false);
       } else {
-        // For now, we'll set admin status based on user existence
-        // You can modify this logic later when you have proper role management
-        setIsAdmin(!!data);
+        setIsAdmin(data || false);
       }
     } catch (error) {
       console.error('Error in checkAdminStatus:', error);

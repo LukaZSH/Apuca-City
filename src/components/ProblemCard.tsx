@@ -7,21 +7,23 @@ import { MapPin, ArrowUp, Clock } from 'lucide-react';
 interface Problem {
   id: string;
   type: string;
+  title: string;
   description: string;
-  location: string;
-  date: string;
+  location_address: string;
+  created_at: string;
   status: 'pending' | 'in_progress' | 'resolved';
-  likes: number;
-  userHasLiked?: boolean;
-  image?: string;
+  likes_count: number;
+  user_has_liked?: boolean;
+  images?: { image_url: string }[];
 }
 
 interface ProblemCardProps {
   problem: Problem;
   onLike: (id: string) => void;
+  onClick?: (problem: Problem) => void;
 }
 
-const ProblemCard = ({ problem, onLike }: ProblemCardProps) => {
+const ProblemCard = ({ problem, onLike, onClick }: ProblemCardProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
@@ -48,6 +50,19 @@ const ProblemCard = ({ problem, onLike }: ProblemCardProps) => {
     }
   };
 
+  const getTypeDisplayName = (type: string) => {
+    const typeMap: { [key: string]: string } = {
+      'buraco_na_rua': 'Buraco na rua',
+      'lixo_acumulado': 'Lixo acumulado',
+      'vandalismo': 'Vandalismo',
+      'iluminacao_publica': 'Iluminação pública',
+      'sinalizacao_danificada': 'Sinalização danificada',
+      'calcada_danificada': 'Calçada danificada',
+      'outro': 'Outro'
+    };
+    return typeMap[type] || type;
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -67,12 +82,26 @@ const ProblemCard = ({ problem, onLike }: ProblemCardProps) => {
     }
   };
 
+  const handleCardClick = () => {
+    if (onClick) {
+      onClick(problem);
+    }
+  };
+
+  const handleLikeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onLike(problem.id);
+  };
+
   return (
-    <Card className="hover:shadow-md transition-shadow duration-200 border border-gray-100">
+    <Card 
+      className="hover:shadow-md transition-shadow duration-200 border border-gray-100 cursor-pointer"
+      onClick={handleCardClick}
+    >
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-3">
           <Badge variant="outline" className="text-xs font-medium bg-blue-50 text-blue-700 border-blue-200">
-            {problem.type}
+            {getTypeDisplayName(problem.type)}
           </Badge>
           <Badge className={`text-xs ${getStatusColor(problem.status)}`}>
             {getStatusText(problem.status)}
@@ -80,29 +109,33 @@ const ProblemCard = ({ problem, onLike }: ProblemCardProps) => {
         </div>
         
         <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-          {problem.description}
+          {problem.title}
         </h3>
         
+        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+          {problem.description}
+        </p>
+        
         <div className="flex items-center text-gray-500 text-sm mb-2">
-          <MapPin className="w-4 h-4 mr-1" />
-          <span className="truncate">{problem.location}</span>
+          <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+          <span className="truncate">{problem.location_address}</span>
         </div>
         
         <div className="flex items-center justify-between">
           <div className="flex items-center text-gray-400 text-xs">
             <Clock className="w-3 h-3 mr-1" />
-            <span>{formatDate(problem.date)}</span>
+            <span>{formatDate(problem.created_at)}</span>
           </div>
           <button
-            onClick={() => onLike(problem.id)}
+            onClick={handleLikeClick}
             className={`flex items-center space-x-1 transition-colors ${
-              problem.userHasLiked 
+              problem.user_has_liked 
                 ? 'text-blue-600 hover:text-blue-700' 
                 : 'text-gray-500 hover:text-blue-600'
             }`}
           >
-            <ArrowUp className={`w-4 h-4 ${problem.userHasLiked ? 'fill-current' : ''}`} />
-            <span className="text-sm font-medium">{problem.likes}</span>
+            <ArrowUp className={`w-4 h-4 ${problem.user_has_liked ? 'fill-current' : ''}`} />
+            <span className="text-sm font-medium">{problem.likes_count}</span>
           </button>
         </div>
       </CardContent>

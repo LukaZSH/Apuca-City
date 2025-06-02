@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useStorage } from '@/hooks/useStorage';
+import { supabase } from '@/integrations/supabase/client';
 import Header from './Header';
 
 interface ProfilePageProps {
@@ -17,10 +18,11 @@ interface ProfilePageProps {
 
 const ProfilePage = ({ onNewReport, onBackToDashboard }: ProfilePageProps) => {
   const { signOut } = useAuth();
-  const { profile, updateProfile, loading } = useProfile();
+  const { profile, loading } = useProfile();
   const { uploadImage, uploading } = useStorage();
-  const [fullName, setFullName] = useState(profile?.full_name || '');
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -31,27 +33,60 @@ const ProfilePage = ({ onNewReport, onBackToDashboard }: ProfilePageProps) => {
       
       if (error) {
         console.error('Error uploading avatar:', error);
+        alert('Erro ao fazer upload da imagem. Tente novamente.');
         return;
       }
 
       if (url) {
-        await updateProfile({ avatar_url: url });
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ avatar_url: url })
+          .eq('id', profile.id);
+
+        if (updateError) {
+          console.error('Error updating avatar URL:', updateError);
+          alert('Erro ao atualizar foto de perfil. Tente novamente.');
+        } else {
+          alert('Foto de perfil atualizada com sucesso!');
+          window.location.reload();
+        }
       }
     } catch (error) {
       console.error('Error in handleImageUpload:', error);
+      alert('Erro ao fazer upload da imagem. Tente novamente.');
     }
   };
 
-  const handleUpdateName = async () => {
-    if (!fullName.trim()) return;
+  const handleUpdatePassword = async () => {
+    if (!newPassword.trim() || newPassword !== confirmPassword) {
+      alert('As senhas não coincidem ou estão vazias');
+      return;
+    }
 
-    setIsUpdating(true);
+    if (newPassword.length < 6) {
+      alert('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    setIsUpdatingPassword(true);
     try {
-      await updateProfile({ full_name: fullName.trim() });
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        console.error('Error updating password:', error);
+        alert('Erro ao atualizar senha. Tente novamente.');
+      } else {
+        alert('Senha atualizada com sucesso!');
+        setNewPassword('');
+        setConfirmPassword('');
+      }
     } catch (error) {
-      console.error('Error updating name:', error);
+      console.error('Error in handleUpdatePassword:', error);
+      alert('Erro ao atualizar senha. Tente novamente.');
     } finally {
-      setIsUpdating(false);
+      setIsUpdatingPassword(false);
     }
   };
 
@@ -134,7 +169,7 @@ const ProfilePage = ({ onNewReport, onBackToDashboard }: ProfilePageProps) => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Informações Pessoais</CardTitle>
+              <CardTitle>Alterar Senha</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -147,20 +182,31 @@ const ProfilePage = ({ onNewReport, onBackToDashboard }: ProfilePageProps) => {
                 />
               </div>
               <div>
-                <Label htmlFor="fullName">Nome Completo</Label>
+                <Label htmlFor="newPassword">Nova Senha</Label>
                 <Input
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Digite seu nome completo"
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Digite sua nova senha"
+                />
+              </div>
+              <div>
+                <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirme sua nova senha"
                 />
               </div>
               <Button
-                onClick={handleUpdateName}
-                disabled={isUpdating || !fullName.trim() || fullName === profile?.full_name}
+                onClick={handleUpdatePassword}
+                disabled={isUpdatingPassword || !newPassword.trim() || newPassword !== confirmPassword}
                 className="w-full"
               >
-                {isUpdating ? 'Atualizando...' : 'Atualizar Nome'}
+                {isUpdatingPassword ? 'Atualizando...' : 'Atualizar Senha'}
               </Button>
             </CardContent>
           </Card>
@@ -168,7 +214,7 @@ const ProfilePage = ({ onNewReport, onBackToDashboard }: ProfilePageProps) => {
 
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle className="text-red-600 dark:text-red-400">Zona de Perigo</CardTitle>
+            <CardTitle className="text-red-600 dark:text-red-400">Logout</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
