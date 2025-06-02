@@ -28,7 +28,7 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
     latitude: 0,
     longitude: 0
   });
-  const [images, setImages] = useState<File[]>([]);
+  const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const { createProblem } = useProblems();
 
@@ -49,6 +49,14 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
       latitude: location.latitude,
       longitude: location.longitude
     }));
+  };
+
+  const handleImageUploaded = (url: string) => {
+    setImages(prev => [...prev, url]);
+  };
+
+  const handleRemoveImage = (url: string) => {
+    setImages(prev => prev.filter(img => img !== url));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,12 +85,6 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
         return;
       }
 
-      // TODO: Implementar upload de imagens quando storage estiver configurado
-      if (images.length > 0) {
-        console.log('Imagens selecionadas:', images.length);
-        // Implementar upload das imagens aqui
-      }
-
       alert('Relato enviado com sucesso!');
       onSubmit();
     } catch (error) {
@@ -94,15 +96,15 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b border-gray-100">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-100 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
               <Button variant="ghost" size="icon" onClick={onCancel}>
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <h1 className="text-xl font-bold text-gray-900">Novo relato</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Novo relato</h1>
             </div>
           </div>
         </div>
@@ -167,7 +169,9 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
                 <Label>Fotos do problema (opcional)</Label>
                 <div className="mt-2">
                   <ImageUpload
-                    onImagesChange={setImages}
+                    onImageUploaded={handleImageUploaded}
+                    onRemoveImage={handleRemoveImage}
+                    images={images}
                     maxImages={3}
                   />
                 </div>

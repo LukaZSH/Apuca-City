@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useStorage } from '@/hooks/useStorage';
 
@@ -8,9 +8,10 @@ interface ImageUploadProps {
   onRemoveImage: (url: string) => void;
   images: string[];
   maxImages?: number;
+  onImagesChange?: (files: File[]) => void;
 }
 
-const ImageUpload = ({ onImageUploaded, onRemoveImage, images, maxImages = 3 }: ImageUploadProps) => {
+const ImageUpload = ({ onImageUploaded, onRemoveImage, images, maxImages = 3, onImagesChange }: ImageUploadProps) => {
   const { uploadImage, uploading } = useStorage();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -18,6 +19,15 @@ const ImageUpload = ({ onImageUploaded, onRemoveImage, images, maxImages = 3 }: 
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
+    const fileArray = Array.from(files);
+    
+    // Se onImagesChange foi fornecido, apenas atualiza o estado sem upload
+    if (onImagesChange) {
+      onImagesChange(fileArray);
+      return;
+    }
+
+    // Caso contrário, faz o upload real
     for (let i = 0; i < files.length && images.length + i < maxImages; i++) {
       const file = files[i];
       

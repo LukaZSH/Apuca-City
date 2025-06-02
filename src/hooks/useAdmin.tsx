@@ -24,15 +24,10 @@ export const useAdmin = () => {
     }
 
     try {
-      // Verificar se o usuário tem role de admin na tabela user_roles
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .single();
+      // Usar a função SQL que criamos para verificar se é admin
+      const { data, error } = await supabase.rpc('is_admin', { user_id: user.id });
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error checking admin status:', error);
         setIsAdmin(false);
       } else {
