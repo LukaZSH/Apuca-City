@@ -2,8 +2,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { MapPin, Clock, ArrowUp, X } from 'lucide-react';
+import { MapPin, Clock, ArrowUp } from 'lucide-react';
 import { Problem } from '@/hooks/useProblems';
 
 interface ProblemDetailModalProps {
@@ -66,6 +65,8 @@ const ProblemDetailModal = ({ problem, isOpen, onClose, onLike }: ProblemDetailM
     });
   };
 
+  console.log('Problem images in modal:', problem.images);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -84,24 +85,32 @@ const ProblemDetailModal = ({ problem, isOpen, onClose, onLike }: ProblemDetailM
                 {problem.title}
               </DialogTitle>
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="w-4 h-4" />
-            </Button>
           </div>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Imagens do problema */}
           {problem.images && problem.images.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {problem.images.map((image, index) => (
-                <img
-                  key={index}
-                  src={image.image_url}
-                  alt={`Imagem do problema ${index + 1}`}
-                  className="w-full h-48 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
-                />
-              ))}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Imagens</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {problem.images.map((image, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={image.image_url}
+                      alt={`Imagem do problema ${index + 1}`}
+                      className="w-full h-48 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
+                      onError={(e) => {
+                        console.error('Erro ao carregar imagem:', image.image_url);
+                        e.currentTarget.style.display = 'none';
+                      }}
+                      onLoad={() => {
+                        console.log('Imagem carregada com sucesso:', image.image_url);
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
