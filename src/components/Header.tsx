@@ -1,80 +1,119 @@
 
 import React from 'react';
-import { Plus, LogOut, User, Settings, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { useAdmin } from '@/hooks/useAdmin';
-import {
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ThemeToggle } from './ThemeToggle';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
+import { useAdmin } from '@/hooks/useAdmin';
 
 interface HeaderProps {
   onNewReport: () => void;
   onShowUserProblems?: () => void;
   onShowAdminPanel?: () => void;
+  onShowProfile?: () => void;
 }
 
-const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel }: HeaderProps) => {
+const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfile }: HeaderProps) => {
   const { user, signOut } = useAuth();
+  const { profile } = useProfile();
   const { isAdmin } = useAdmin();
 
-  const handleSignOut = async () => {
-    await signOut();
+  const getUserDisplayName = () => {
+    if (profile?.full_name) {
+      return profile.full_name;
+    }
+    return user?.email || 'Usuário';
+  };
+
+  const getUserInitials = () => {
+    if (profile?.full_name) {
+      return profile.full_name.split(' ').map(name => name.charAt(0)).join('').slice(0, 2).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return 'U';
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-100">
+    <header className="bg-white dark:bg-gray-800 shadow border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-lg">AC</span>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Apuca City</h1>
-              <p className="text-xs text-gray-500">Sua cidade, sua voz</p>
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">🏛️</span>
+              </div>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                CidadeApp
+              </h1>
             </div>
           </div>
           
-          <div className="flex items-center space-x-3">
-            <Button
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            
+            <Button 
               onClick={onNewReport}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium h-10 px-4"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Novo relato
+              Novo Relatório
             </Button>
+            
+            {onShowUserProblems && (
+              <Button variant="outline" onClick={onShowUserProblems}>
+                Meus Relatórios
+              </Button>
+            )}
+            
+            {isAdmin && onShowAdminPanel && (
+              <Button 
+                variant="outline" 
+                onClick={onShowAdminPanel}
+                className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+              >
+                <Badge variant="secondary" className="mr-2 bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300">
+                  Admin
+                </Badge>
+                Painel Admin
+              </Button>
+            )}
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10">
-                  <User className="w-5 h-5" />
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={profile?.avatar_url || ''} />
+                    <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                  </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem disabled className="text-xs">
-                  {user?.email}
-                </DropdownMenuItem>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <div className="flex items-center justify-start gap-2 p-2">
+                  <div className="flex flex-col space-y-1 leading-none">
+                    <p className="font-medium text-sm">{getUserDisplayName()}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
+                  </div>
+                </div>
                 <DropdownMenuSeparator />
-                {onShowUserProblems && (
-                  <DropdownMenuItem onClick={onShowUserProblems}>
-                    <FileText className="w-4 h-4 mr-2" />
-                    Meus relatórios
-                  </DropdownMenuItem>
+                {onShowProfile && (
+                  <>
+                    <DropdownMenuItem onClick={onShowProfile}>
+                      Meu Perfil
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
                 )}
-                {isAdmin && onShowAdminPanel && (
-                  <DropdownMenuItem onClick={onShowAdminPanel}>
-                    <Settings className="w-4 h-4 mr-2" />
-                    Painel administrativo
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
-                  <LogOut className="w-4 h-4 mr-2" />
+                <DropdownMenuItem onClick={signOut}>
                   Sair
                 </DropdownMenuItem>
               </DropdownMenuContent>

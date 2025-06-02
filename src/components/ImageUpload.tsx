@@ -1,130 +1,97 @@
 
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera, Image, X } from 'lucide-react';
+import { useStorage } from '@/hooks/useStorage';
 
 interface ImageUploadProps {
-  onImagesChange: (images: File[]) => void;
+  onImageUploaded: (url: string) => void;
+  onRemoveImage: (url: string) => void;
+  images: string[];
   maxImages?: number;
 }
 
-const ImageUpload = ({ onImagesChange, maxImages = 3 }: ImageUploadProps) => {
-  const [images, setImages] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
+const ImageUpload = ({ onImageUploaded, onRemoveImage, images, maxImages = 3 }: ImageUploadProps) => {
+  const { uploadImage, uploading } = useStorage();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    addImages(files);
-  };
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-  const addImages = (newFiles: File[]) => {
-    const validFiles = newFiles.filter(file => {
-      const isImage = file.type.startsWith('image/');
-      const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB
-      return isImage && isValidSize;
-    });
+    for (let i = 0; i < files.length && images.length + i < maxImages; i++) {
+      const file = files[i];
+      
+      try {
+        const { url, error } = await uploadImage(file, 'problem-images');
+        
+        if (error) {
+          console.error('Error uploading image:', error);
+          continue;
+        }
 
-    if (images.length + validFiles.length > maxImages) {
-      alert(`Você pode adicionar no máximo ${maxImages} imagens`);
-      return;
+        if (url) {
+          onImageUploaded(url);
+        }
+      } catch (error) {
+        console.error('Error in handleImageUpload:', error);
+      }
     }
 
-    const updatedImages = [...images, ...validFiles];
-    setImages(updatedImages);
-    onImagesChange(updatedImages);
-
-    // Criar previews
-    validFiles.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviews(prev => [...prev, e.target?.result as string]);
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const removeImage = (index: number) => {
-    const updatedImages = images.filter((_, i) => i !== index);
-    const updatedPreviews = previews.filter((_, i) => i !== index);
-    
-    setImages(updatedImages);
-    setPreviews(updatedPreviews);
-    onImagesChange(updatedImages);
-  };
-
-  const handleCameraCapture = () => {
+    // Reset input
     if (fileInputRef.current) {
-      fileInputRef.current.setAttribute('capture', 'environment');
-      fileInputRef.current.click();
+      fileInputRef.current.value = '';
     }
   };
 
-  const handleGallerySelect = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.removeAttribute('capture');
-      fileInputRef.current.click();
-    }
+  const handleRemoveImage = (imageUrl: string) => {
+    onRemoveImage(imageUrl);
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleCameraCapture}
-          className="flex-1"
-          disabled={images.length >= maxImages}
-        >
-          <Camera className="w-4 h-4 mr-2" />
-          Câmera
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleGallerySelect}
-          className="flex-1"
-          disabled={images.length >= maxImages}
-        >
-          <Image className="w-4 h-4 mr-2" />
-          Galeria
-        </Button>
-      </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={handleFileSelect}
-        className="hidden"
-      />
-
-      {previews.length > 0 && (
-        <div className="grid grid-cols-3 gap-2">
-          {previews.map((preview, index) => (
-            <div key={index} className="relative">
+      {images.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {images.map((imageUrl, index) => (
+            <div key={index} className="relative group">
               <img
-                src={preview}
-                alt={`Preview ${index + 1}`}
-                className="w-full h-24 object-cover rounded border"
+                src={imageUrl}
+                alt={`Upload ${index + 1}`}
+                className="w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
               />
               <button
                 type="button"
-                onClick={() => removeImage(index)}
-                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                onClick={() => handleRemoveImage(imageUrl)}
+                className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <X className="w-3 h-3" />
+                ×
               </button>
             </div>
           ))}
         </div>
       )}
-
-      <p className="text-xs text-gray-500">
-        {images.length}/{maxImages} imagens • Máximo 5MB por imagem
-      </p>
+      
+      {images.length < maxImages && (
+        <div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageUpload}
+            className="hidden"
+            id="image-upload"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            disabled={uploading}
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full"
+          >
+            {uploading ? 'Enviando...' : `Adicionar Foto${images.length < maxImages - 1 ? 's' : ''} (${images.length}/${maxImages})`}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

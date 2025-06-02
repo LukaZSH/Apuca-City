@@ -24,14 +24,20 @@ export const useAdmin = () => {
     }
 
     try {
-      // Por enquanto, vamos verificar se o email do usuário está em uma lista de admins
-      // Você pode atualizar esta lista com emails de administradores
-      const adminEmails = [
-        'admin@apucacity.com',
-        'seu-email@exemplo.com' // Adicione seu email aqui
-      ];
+      // Verificar se o usuário tem role de admin na tabela user_roles
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .single();
 
-      setIsAdmin(adminEmails.includes(user.email || ''));
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+      } else {
+        setIsAdmin(!!data);
+      }
     } catch (error) {
       console.error('Error in checkAdminStatus:', error);
       setIsAdmin(false);
@@ -122,6 +128,26 @@ export const useAdmin = () => {
     }
   };
 
+  const deleteProblem = async (problemId: string) => {
+    if (!isAdmin) return { error: 'Unauthorized' };
+
+    try {
+      const { error } = await supabase
+        .from('problems')
+        .delete()
+        .eq('id', problemId);
+
+      if (!error) {
+        fetchStats(); // Recarregar estatísticas
+      }
+
+      return { error };
+    } catch (error) {
+      console.error('Error deleting problem:', error);
+      return { error };
+    }
+  };
+
   useEffect(() => {
     checkAdminStatus();
   }, [user]);
@@ -137,6 +163,7 @@ export const useAdmin = () => {
     loading,
     stats,
     updateProblemStatus,
+    deleteProblem,
     refetchStats: fetchStats
   };
 };

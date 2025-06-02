@@ -15,15 +15,15 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps) => {
-  const { stats, updateProblemStatus } = useAdmin();
-  const { problems, loading } = useProblems();
+  const { stats, updateProblemStatus, deleteProblem } = useAdmin();
+  const { problems, loading, refetch } = useProblems();
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'resolved': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case 'in_progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'resolved': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
     }
   };
 
@@ -51,13 +51,21 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
 
   const handleStatusChange = async (problemId: string, newStatus: 'pending' | 'in_progress' | 'resolved') => {
     await updateProblemStatus(problemId, newStatus);
+    refetch();
+  };
+
+  const handleDeleteProblem = async (problemId: string) => {
+    if (confirm('Tem certeza que deseja excluir este problema? Esta ação não pode ser desfeita.')) {
+      await deleteProblem(problemId);
+      refetch();
+    }
   };
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Header onNewReport={onNewReport} />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center h-64">
@@ -69,16 +77,16 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header onNewReport={onNewReport} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               Painel Administrativo
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Gerencie problemas e visualize estatísticas da cidade
             </p>
           </div>
@@ -95,29 +103,29 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Total de Problemas</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Problemas</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.total_problems || 0}</div>
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.total_problems || 0}</div>
             </CardContent>
           </Card>
           
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Problemas Recentes</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Problemas Recentes</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats?.recent_problems || 0}</div>
-              <p className="text-xs text-gray-500">Últimos 7 dias</p>
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats?.recent_problems || 0}</div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Últimos 7 dias</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Pendentes</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Pendentes</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">
+              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                 {stats?.problems_by_status.find(s => s.status === 'pending')?.count || 0}
               </div>
             </CardContent>
@@ -125,10 +133,10 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Resolvidos</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Resolvidos</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {stats?.problems_by_status.find(s => s.status === 'resolved')?.count || 0}
               </div>
             </CardContent>
@@ -190,7 +198,7 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
           <CardContent>
             <div className="space-y-4">
               {problems.map((problem) => (
-                <div key={problem.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div key={problem.id} className="flex items-center justify-between p-4 border rounded-lg dark:border-gray-700">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <Badge variant="outline" className="text-xs">
@@ -200,11 +208,11 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
                         {getStatusText(problem.status)}
                       </Badge>
                     </div>
-                    <h4 className="font-medium text-gray-900">{problem.title}</h4>
-                    <p className="text-sm text-gray-600 line-clamp-2">{problem.description}</p>
-                    <p className="text-xs text-gray-500 mt-1">{problem.location_address}</p>
+                    <h4 className="font-medium text-gray-900 dark:text-white">{problem.title}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{problem.description}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{problem.location_address}</p>
                   </div>
-                  <div className="ml-4">
+                  <div className="ml-4 flex gap-2">
                     <Select
                       value={problem.status}
                       onValueChange={(value: 'pending' | 'in_progress' | 'resolved') => 
@@ -220,6 +228,13 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
                         <SelectItem value="resolved">Resolvido</SelectItem>
                       </SelectContent>
                     </Select>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeleteProblem(problem.id)}
+                    >
+                      Excluir
+                    </Button>
                   </div>
                 </div>
               ))}

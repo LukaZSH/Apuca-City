@@ -11,6 +11,7 @@ interface DashboardProps {
   onNewReport: () => void;
   onShowUserProblems: () => void;
   onShowAdminPanel: () => void;
+  onShowProfile: () => void;
 }
 
 interface FilterState {
@@ -21,7 +22,7 @@ interface FilterState {
   dateTo: Date | undefined;
 }
 
-const Dashboard = ({ onNewReport, onShowUserProblems, onShowAdminPanel }: DashboardProps) => {
+const Dashboard = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfile }: DashboardProps) => {
   const { problems, loading, toggleLike } = useProblems();
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterState>({
@@ -102,11 +103,12 @@ const Dashboard = ({ onNewReport, onShowUserProblems, onShowAdminPanel }: Dashbo
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Header 
           onNewReport={onNewReport}
           onShowUserProblems={onShowUserProblems}
           onShowAdminPanel={onShowAdminPanel}
+          onShowProfile={onShowProfile}
         />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center h-64">
@@ -118,11 +120,12 @@ const Dashboard = ({ onNewReport, onShowUserProblems, onShowAdminPanel }: Dashbo
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header 
         onNewReport={onNewReport}
         onShowUserProblems={onShowUserProblems}
         onShowAdminPanel={onShowAdminPanel}
+        onShowProfile={onShowProfile}
       />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

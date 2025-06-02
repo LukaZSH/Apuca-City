@@ -5,9 +5,10 @@ import Dashboard from '@/components/Dashboard';
 import AdminDashboard from '@/components/AdminDashboard';
 import UserProblemsPage from '@/components/UserProblemsPage';
 import NewReportForm from '@/components/NewReportForm';
+import ProfilePage from '@/components/ProfilePage';
 import { useAuth } from '@/hooks/useAuth';
 
-type ViewType = 'dashboard' | 'new-report' | 'user-problems' | 'admin-panel';
+type ViewType = 'dashboard' | 'new-report' | 'user-problems' | 'admin-panel' | 'profile';
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -33,13 +34,17 @@ const Index = () => {
     setCurrentView('admin-panel');
   };
 
+  const handleShowProfile = () => {
+    setCurrentView('profile');
+  };
+
   const handleBackToDashboard = () => {
     setCurrentView('dashboard');
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-gray-500">Carregando...</div>
       </div>
     );
@@ -73,6 +78,14 @@ const Index = () => {
           onBackToDashboard={handleBackToDashboard}
         />
       );
+
+    case 'profile':
+      return (
+        <ProfilePage
+          onNewReport={handleNewReport}
+          onBackToDashboard={handleBackToDashboard}
+        />
+      );
       
     default:
       return (
@@ -80,6 +93,7 @@ const Index = () => {
           onNewReport={handleNewReport}
           onShowUserProblems={handleShowUserProblems}
           onShowAdminPanel={handleShowAdminPanel}
+          onShowProfile={handleShowProfile}
         />
       );
   }
