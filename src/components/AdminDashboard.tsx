@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React from 'react'; // Adicionado import do React para React.useMemo
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -62,6 +61,18 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
   };
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+  
+  // MODIFICAÇÃO: Preparar dados traduzidos para o gráfico de status
+  // Usar React.useMemo para otimizar, recalculando apenas quando stats.problems_by_status mudar.
+  const translatedProblemsByStatus = React.useMemo(() => {
+    if (!stats?.problems_by_status) {
+      return [];
+    }
+    return stats.problems_by_status.map(item => ({
+      ...item,
+      statusLabel: getStatusText(item.status) // Adiciona um novo campo com o rótulo traduzido
+    }));
+  }, [stats?.problems_by_status]); // Dependência do useMemo
 
   if (loading) {
     return (
@@ -77,7 +88,7 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900"> {/* Alterado para bg-gray-50 dark:bg-gray-900 para consistência com o loading */}
       <Header onNewReport={onNewReport} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -151,10 +162,12 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats?.problems_by_status || []}>
+                {/* MODIFICAÇÃO: Passar os dados traduzidos para o gráfico */}
+                <BarChart data={translatedProblemsByStatus}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="status" />
-                  <YAxis />
+                  {/* MODIFICAÇÃO: Usar o campo traduzido para o eixo X */}
+                  <XAxis dataKey="statusLabel" /> 
+                  <YAxis allowDecimals={false} /> {/* Adicionado allowDecimals={false} para o eixo Y se a contagem for sempre inteira */}
                   <Tooltip />
                   <Bar dataKey="count" fill="#3B82F6" />
                 </BarChart>

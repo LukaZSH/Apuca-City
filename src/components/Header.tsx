@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -67,12 +66,12 @@ const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfi
               onClick={onNewReport}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              Novo Relatório
+              Novo Relato
             </Button>
             
             {onShowUserProblems && (
               <Button variant="outline" onClick={onShowUserProblems}>
-                Meus Relatórios
+                Meus Relatos
               </Button>
             )}
             
