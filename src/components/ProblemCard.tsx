@@ -108,21 +108,21 @@ const ProblemCard = ({ problem, onLike, onClick }: ProblemCardProps) => {
           </Badge>
         </div>
         
-        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+        <h3 className="font-semibold text-card-foreground mb-2 line-clamp-2">
           {problem.title}
         </h3>
         
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+        <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
           {problem.description}
         </p>
         
-        <div className="flex items-center text-gray-500 text-sm mb-2">
+        <div className="flex items-center text-muted-foreground text-sm mb-2">
           <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
           <span className="truncate">{problem.location_address}</span>
         </div>
         
         <div className="flex items-center justify-between">
-          <div className="flex items-center text-gray-400 text-xs">
+          <div className="flex items-center text-muted-foreground/80 text-xs">
             <Clock className="w-3 h-3 mr-1" />
             <span>{formatDate(problem.created_at)}</span>
           </div>
