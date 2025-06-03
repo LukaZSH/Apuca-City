@@ -14,6 +14,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useAdmin } from '@/hooks/useAdmin';
+import { FaBuilding } from "react-icons/fa6";
 
 interface HeaderProps {
   onNewReport: () => void;
@@ -51,7 +52,7 @@ const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfi
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">🏛️</span>
+                <span className="text-white font-bold text-lg"><FaBuilding /></span>
               </div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 Apuca City

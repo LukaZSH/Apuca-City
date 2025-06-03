@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { FaBuilding } from "react-icons/fa6";
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -54,7 +55,7 @@ const Login = () => {
       <Card className="w-full max-w-md shadow-xl border-0">
         <CardHeader className="text-center pb-8">
           <div className="mx-auto mb-6 w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center">
-            <div className="text-white text-2xl font-bold">AC</div>
+            <div className="text-white text-2xl font-bold"><FaBuilding /></div>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Apuca City</h1>
           <p className="text-gray-600 text-sm">
