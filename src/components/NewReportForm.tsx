@@ -1,3 +1,4 @@
+// Arquivo: src/components/NewReportForm.tsx
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,7 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
     latitude: 0,
     longitude: 0
   });
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<string[]>([]); // Este estado já armazena as URLs
   const [loading, setLoading] = useState(false);
   const { createProblem } = useProblems();
 
@@ -56,6 +57,8 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
   };
 
   const handleRemoveImage = (url: string) => {
+    // Se você precisar deletar a imagem do storage também, adicione a lógica aqui
+    // usando o hook useStorage e a URL completa (ou o path da imagem no bucket).
     setImages(prev => prev.filter(img => img !== url));
   };
 
@@ -63,33 +66,44 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
     e.preventDefault();
     
     if (!formData.type || !formData.title || !formData.description || !formData.location_address) {
-      alert('Por favor, preencha todos os campos obrigatórios');
+      alert('Por favor, preencha todos os campos obrigatórios: Tipo, Título, Descrição e Localização.');
+      return;
+    }
+     if (formData.title.length > 100) {
+      alert('O título deve ter no máximo 100 caracteres.');
+      return;
+    }
+    if (formData.description.length > 500) {
+      alert('A descrição deve ter no máximo 500 caracteres.');
       return;
     }
 
     setLoading(true);
 
     try {
-      const { error } = await createProblem({
+      // MODIFICAÇÃO AQUI: Passar o array 'images' para createProblem
+      const { data, error } = await createProblem({
         type: formData.type,
         title: formData.title,
         description: formData.description,
         location_address: formData.location_address,
         latitude: formData.latitude || undefined,
-        longitude: formData.longitude || undefined
+        longitude: formData.longitude || undefined,
+        image_urls: images // <-- ADICIONADO: passando as URLs das imagens
       });
 
       if (error) {
         console.error('Erro ao criar problema:', error);
-        alert('Erro ao enviar o relato. Tente novamente.');
-        return;
+        alert(`Erro ao enviar o relato: ${error.message || 'Tente novamente.'}`);
+        return; // Mantém o setLoading para o usuário não tentar de novo imediatamente se quiser
       }
 
       alert('Relato enviado com sucesso!');
-      onSubmit();
-    } catch (error) {
+      onSubmit(); // Chama a função para, por exemplo, mudar de tela/modal
+
+    } catch (error: any) {
       console.error('Erro ao enviar relato:', error);
-      alert('Erro ao enviar o relato. Tente novamente.');
+      alert(`Erro ao enviar o relato: ${error.message || 'Tente novamente.'}`);
     } finally {
       setLoading(false);
     }
@@ -121,7 +135,7 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
                 <Label htmlFor="type">Tipo de problema *</Label>
                 <Select value={formData.type} onValueChange={(value: ProblemType) => 
                   setFormData(prev => ({ ...prev, type: value }))}>
-                  <SelectTrigger>
+                  <SelectTrigger id="type">
                     <SelectValue placeholder="Selecione o tipo de problema" />
                   </SelectTrigger>
                   <SelectContent>
@@ -142,6 +156,7 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Ex: Buraco grande na Rua das Flores"
                   maxLength={100}
+                  required
                 />
               </div>
 
@@ -154,6 +169,7 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
                   placeholder="Descreva o problema em detalhes..."
                   rows={4}
                   maxLength={500}
+                  required
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   {formData.description.length}/500 caracteres
@@ -164,9 +180,20 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
                 onLocationChange={handleLocationChange}
                 initialAddress={formData.location_address}
               />
+               <div>
+                <Label>Endereço (será preenchido pelo GPS ou manualmente) *</Label>
+                <Input
+                  value={formData.location_address}
+                  onChange={(e) => setFormData(prev => ({ ...prev, location_address: e.target.value }))}
+                  placeholder="Endereço do problema"
+                  required
+                  disabled // Desabilitado pois é preenchido pelo LocationPicker
+                />
+              </div>
+
 
               <div>
-                <Label>Fotos do problema (opcional)</Label>
+                <Label>Fotos do problema (opcional - máx. 3)</Label>
                 <div className="mt-2">
                   <ImageUpload
                     onImageUploaded={handleImageUploaded}
@@ -183,6 +210,7 @@ const NewReportForm = ({ onSubmit, onCancel }: NewReportFormProps) => {
                   variant="outline"
                   onClick={onCancel}
                   className="flex-1"
+                  disabled={loading}
                 >
                   Cancelar
                 </Button>

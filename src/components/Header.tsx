@@ -54,7 +54,7 @@ const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfi
                 <span className="text-white font-bold text-lg">🏛️</span>
               </div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                CidadeApp
+                Apuca City
               </h1>
             </div>
           </div>

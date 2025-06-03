@@ -1,3 +1,4 @@
+// Arquivo: src/hooks/useProblems.tsx
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,7 +6,8 @@ import { useAuth } from './useAuth';
 import { Database } from '@/integrations/supabase/types';
 
 type ProblemType = Database['public']['Enums']['problem_type'];
-type ProblemStatus = Database['public']['Enums']['problem_status'];
+// ProblemStatus não é usado diretamente em createProblem, mas pode ser mantido se usado em outro lugar.
+// type ProblemStatus = Database['public']['Enums']['problem_status'];
 
 export interface Problem {
   id: string;
@@ -33,7 +35,6 @@ export const useProblems = () => {
     try {
       setLoading(true);
       
-      // Buscar problemas com informações de curtidas do usuário atual
       let query = supabase
         .from('problems')
         .select(`
@@ -46,10 +47,10 @@ export const useProblems = () => {
 
       if (error) {
         console.error('Error fetching problems:', error);
+        setProblems([]); // Definir como array vazio em caso de erro
         return;
       }
 
-      // Se o usuário estiver logado, verificar quais problemas ele curtiu
       if (user && problemsData) {
         const problemIds = problemsData.map(p => p.id);
         const { data: likesData } = await supabase
@@ -60,22 +61,23 @@ export const useProblems = () => {
 
         const likedProblemIds = new Set(likesData?.map(like => like.problem_id) || []);
 
-        const problemsWithLikes = problemsData.map(problem => ({
+        const problemsWithLikesAndImages = problemsData.map(problem => ({
           ...problem,
           user_has_liked: likedProblemIds.has(problem.id),
-          images: problem.problem_images || []
+          // Assegurar que 'images' seja um array, mesmo que problem_images seja null/undefined
+          images: Array.isArray(problem.problem_images) ? problem.problem_images : [] 
         }));
-
-        setProblems(problemsWithLikes);
+        setProblems(problemsWithLikesAndImages);
       } else {
         setProblems(problemsData?.map(problem => ({
           ...problem,
           user_has_liked: false,
-          images: problem.problem_images || []
+          images: Array.isArray(problem.problem_images) ? problem.problem_images : []
         })) || []);
       }
     } catch (error) {
       console.error('Error in fetchProblems:', error);
+      setProblems([]); // Definir como array vazio em caso de erro
     } finally {
       setLoading(false);
     }
@@ -89,7 +91,6 @@ export const useProblems = () => {
 
     try {
       if (problem.user_has_liked) {
-        // Remover curtida
         const { error } = await supabase
           .from('problem_likes')
           .delete()
@@ -104,7 +105,6 @@ export const useProblems = () => {
           ));
         }
       } else {
-        // Adicionar curtida
         const { error } = await supabase
           .from('problem_likes')
           .insert({ problem_id: problemId, user_id: user.id });
@@ -122,6 +122,7 @@ export const useProblems = () => {
     }
   };
 
+  // MODIFICAÇÃO AQUI: Ajustar a tipagem de problemData e a lógica da função
   const createProblem = async (problemData: {
     type: ProblemType;
     title: string;
@@ -129,37 +130,69 @@ export const useProblems = () => {
     location_address: string;
     latitude?: number;
     longitude?: number;
+    image_urls?: string[]; // <-- ADICIONADO: para receber as URLs das imagens
   }) => {
-    if (!user) return { error: 'User not authenticated' };
+    if (!user) return { data: null, error: { message: 'User not authenticated' } };
 
     try {
-      const { data, error } = await supabase
+      // 1. Criar o problema principal
+      const { data: newProblem, error: problemError } = await supabase
         .from('problems')
         .insert({
-          ...problemData,
+          type: problemData.type,
+          title: problemData.title,
+          description: problemData.description,
+          location_address: problemData.location_address,
+          latitude: problemData.latitude,
+          longitude: problemData.longitude,
           user_id: user.id
+          // status e likes_count têm valores padrão no DB, não precisa enviar aqui
         })
         .select()
         .single();
 
-      if (error) {
-        console.error('Error creating problem:', error);
-        return { error };
+      if (problemError) {
+        console.error('Error creating problem:', problemError);
+        return { data: null, error: problemError };
       }
 
-      // Recarregar a lista de problemas
-      fetchProblems();
+      if (!newProblem) {
+        // Isso não deveria acontecer se problemError for nulo, mas é uma boa verificação
+        return { data: null, error: { message: 'Failed to create problem or retrieve its ID.' }};
+      }
+
+      // 2. Se houver URLs de imagem, inseri-las na tabela problem_images
+      if (problemData.image_urls && problemData.image_urls.length > 0) {
+        const imageRecords = problemData.image_urls.map(url => ({
+          problem_id: newProblem.id, // Usa o ID do problema recém-criado
+          image_url: url,
+        }));
+
+        const { error: imagesError } = await supabase
+          .from('problem_images')
+          .insert(imageRecords);
+
+        if (imagesError) {
+          console.error('Error saving problem images:', imagesError);
+          // Aqui você pode decidir como lidar com este erro.
+          // Por exemplo, poderia retornar o erro ou deletar o problema que foi criado
+          // se o salvamento das imagens for crítico.
+          // Por simplicidade, vamos apenas logar e continuar.
+        }
+      }
+
+      await fetchProblems(); // Recarrega a lista de problemas para incluir o novo
       
-      return { data, error: null };
+      return { data: newProblem, error: null };
     } catch (error) {
       console.error('Error in createProblem:', error);
-      return { error };
+      return { data: null, error: error as any };
     }
   };
 
   useEffect(() => {
     fetchProblems();
-  }, [user]);
+  }, [user]); // fetchProblems já é estável, mas user pode mudar
 
   return {
     problems,
