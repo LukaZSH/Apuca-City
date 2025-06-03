@@ -51,14 +51,14 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl border-0">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-xl border-0 bg-card text-card-foreground">
         <CardHeader className="text-center pb-8">
           <div className="mx-auto mb-6 w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center">
             <div className="text-white text-2xl font-bold"><FaBuilding /></div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Apuca City</h1>
-          <p className="text-gray-600 text-sm">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Apuca City</h1>
+           <p className="text-muted-foreground text-sm">
             Relatar problemas urbanos nunca foi tão fácil
           </p>
         </CardHeader>
@@ -119,7 +119,7 @@ const Login = () => {
           <div className="mt-6 text-center">
             <button
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
               disabled={isLoading}
             >
               {isSignUp ? 'Já tem uma conta? Faça login' : 'Não tem conta? Cadastre-se'}
