@@ -1,5 +1,3 @@
-// Arquivo: src/App.tsx - MODIFICADO
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,7 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import UpdatePasswordPage from "@/components/UpdatePasswordPage"; // 1. IMPORTAR O COMPONENTE
+import UpdatePasswordPage from "@/components/UpdatePasswordPage";
 
 const queryClient = new QueryClient();
 
@@ -23,10 +21,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
-              {/* 2. ADICIONAR A ROTA PARA ATUALIZAÇÃO DE SENHA */}
               <Route path="/update-password" element={<UpdatePasswordPage />} />
-              
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

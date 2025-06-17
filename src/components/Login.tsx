@@ -1,6 +1,5 @@
-// Arquivo: src/components/Login.tsx
-import React, { useState } from 'react'; // Removido useEffect se não for usado diretamente aqui
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Adicionado CardTitle se for usar
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,11 +14,9 @@ const Login = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
-  // Novos estados para a funcionalidade "Esqueci minha senha"
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
 
-  // Adicionar requestPasswordReset do hook useAuth
   const { signIn, signUp, requestPasswordReset } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,23 +33,19 @@ const Login = () => {
             toast.error(error.message || 'Erro ao criar conta');
           }
         } else {
-          toast.success('Conta criada com sucesso! Verifique seu e-mail.');
-          // Opcional: Limpar campos ou mudar para tela de login se necessário
-          // setIsSignUp(false);
-          // setEmail('');
-          // setPassword('');
-          // setFullName('');
+          toast.success('Conta criada com sucesso! Verifique seu e-mail para confirmar.');
         }
       } else {
         const { error } = await signIn(email, password);
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
             toast.error('E-mail ou senha incorretos');
+          } else if (error.message.includes('Email not confirmed')) {
+            toast.error('Por favor, confirme seu e-mail antes de fazer login.');
           } else {
             toast.error(error.message || 'Erro ao fazer login');
           }
         }
-        // Se o login for bem-sucedido, o AuthProvider cuidará do redirecionamento/atualização do estado global
       }
     } catch (error) {
       toast.error('Erro inesperado. Tente novamente.');
@@ -62,7 +55,6 @@ const Login = () => {
     }
   };
 
-  // Nova função para lidar com a submissão do formulário de "Esqueci minha senha"
   const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!forgotPasswordEmail) {
@@ -70,28 +62,22 @@ const Login = () => {
       return;
     }
     setIsLoading(true);
-    // Certifique-se que 'requestPasswordReset' existe no seu 'useAuth' e está corretamente implementado
     const { error } = await requestPasswordReset(forgotPasswordEmail);
     if (error) {
       toast.error(error.message || 'Erro ao solicitar redefinição de senha.');
     } else {
       toast.success('Se o e-mail existir em nossa base, um link para redefinição de senha foi enviado.');
-      setShowForgotPassword(false); // Volta para a tela de login/cadastro
-      setForgotPasswordEmail(''); // Limpa o campo
+      setShowForgotPassword(false);
+      setForgotPasswordEmail('');
     }
     setIsLoading(false);
   };
 
-  // Renderização condicional para o formulário de "Esqueci minha senha"
   if (showForgotPassword) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md shadow-xl border-0 bg-card text-card-foreground">
           <CardHeader className="text-center pb-8">
-            {/* Você pode adicionar um ícone específico para redefinição de senha se desejar */}
-            <div className="mx-auto mb-6 w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center">
-              <div className="text-white text-2xl font-bold"><FaBuilding /></div>
-            </div>
             <h1 className="text-2xl font-bold text-foreground mb-2">Redefinir Senha</h1>
             <p className="text-muted-foreground text-sm">
               Digite seu e-mail para enviarmos um link de redefinição.
@@ -122,6 +108,7 @@ const Login = () => {
             </form>
             <div className="mt-6 text-center">
               <button
+                type="button"
                 onClick={() => setShowForgotPassword(false)}
                 className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
                 disabled={isLoading}
@@ -135,7 +122,6 @@ const Login = () => {
     );
   }
 
-  // Formulário principal de Login/Cadastro
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-xl border-0 bg-card text-card-foreground">
@@ -165,7 +151,6 @@ const Login = () => {
                 />
               </div>
             )}
-            
             <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>
               <Input
@@ -178,7 +163,6 @@ const Login = () => {
                 required
               />
             </div>
-            
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
               <Input
@@ -193,11 +177,10 @@ const Login = () => {
               />
             </div>
             
-            {/* Link para Esqueci minha senha (aparece apenas na tela de login) */}
             {!isSignUp && (
               <div className="text-right -mt-2 mb-2"> 
                 <button
-                  type="button" // Importante ser type="button" para não submeter o form principal
+                  type="button"
                   onClick={() => setShowForgotPassword(true)}
                   className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                   disabled={isLoading}
@@ -218,13 +201,8 @@ const Login = () => {
           
           <div className="mt-6 text-center">
             <button
-              onClick={() => {
-                setIsSignUp(!isSignUp);
-                // Limpar campos ao alternar pode ser uma boa UX
-                // setEmail(''); 
-                // setPassword('');
-                // setFullName('');
-              }}
+              type="button"
+              onClick={() => setIsSignUp(!isSignUp)}
               className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
               disabled={isLoading}
             >
