@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { FaBuilding } from "react-icons/fa6";
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -126,8 +125,9 @@ const Login = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-xl border-0 bg-card text-card-foreground">
         <CardHeader className="text-center pb-8">
-          <div className="mx-auto mb-6 w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center">
-            <div className="text-white text-2xl font-bold"><FaBuilding /></div>
+          {/* --- MODIFICAÇÃO AQUI --- */}
+          <div className="mx-auto mb-6 w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center p-2">
+            <img src="/pwa-192x192.png" alt="Logo Apuca City" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">Apuca City</h1>
           <p className="text-muted-foreground text-sm">

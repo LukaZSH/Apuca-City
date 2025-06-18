@@ -13,7 +13,6 @@ import { ThemeToggle } from './ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useAdmin } from '@/hooks/useAdmin';
-import { FaBuilding } from "react-icons/fa6";
 
 interface HeaderProps {
   onNewReport: () => void;
@@ -49,9 +48,10 @@ const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfi
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg"><FaBuilding /></span>
+            {/* --- MODIFICAÇÃO AQUI --- */}
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 flex items-center justify-center">
+                <img src="/pwa-192x192.png" alt="Logo Apuca City" className="h-full w-full" />
               </div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 Apuca City
