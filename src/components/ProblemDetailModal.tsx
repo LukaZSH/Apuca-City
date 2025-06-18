@@ -1,9 +1,7 @@
-// Arquivo: src/components/ProblemDetailModal.tsx
-
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog'; // MODIFICADO: Adicionado DialogClose
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Clock, ArrowUp } from 'lucide-react';
+import { MapPin, Clock, ArrowUp, X as XIcon } from 'lucide-react';
 import { Problem } from '@/hooks/useProblems';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
@@ -85,7 +83,6 @@ const ProblemDetailModal = ({ problem, isOpen, onClose, onLike }: ProblemDetailM
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Imagens do problema com Carousel e Lightbox */}
           {problem.images && problem.images.length > 0 && (
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Imagens</h3>
@@ -112,6 +109,10 @@ const ProblemDetailModal = ({ problem, isOpen, onClose, onLike }: ProblemDetailM
                             alt={`Imagem do problema ${index + 1} em tela cheia`}
                             className="max-w-full max-h-full object-contain rounded-lg"
                           />
+                           <DialogClose className="absolute right-2 top-2 rounded-full p-1.5 bg-black/50 text-white opacity-70 transition-opacity hover:opacity-100 focus:outline-none">
+                             <XIcon className="h-5 w-5" />
+                             <span className="sr-only">Close</span>
+                           </DialogClose>
                         </DialogContent>
                       </Dialog>
                     </CarouselItem>
