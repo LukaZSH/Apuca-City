@@ -1,9 +1,11 @@
+// Arquivo: src/components/ProblemDetailModal.tsx
 
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Clock, ArrowUp } from 'lucide-react';
 import { Problem } from '@/hooks/useProblems';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 interface ProblemDetailModalProps {
   problem: Problem | null;
@@ -30,14 +32,10 @@ const ProblemDetailModal = ({ problem, isOpen, onClose, onLike }: ProblemDetailM
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'pending':
-        return 'Pendente';
-      case 'in_progress':
-        return 'Em andamento';
-      case 'resolved':
-        return 'Resolvido';
-      default:
-        return 'Desconhecido';
+      case 'pending': return 'Pendente';
+      case 'in_progress': return 'Em andamento';
+      case 'resolved': return 'Resolvido';
+      default: return 'Desconhecido';
     }
   };
 
@@ -65,8 +63,6 @@ const ProblemDetailModal = ({ problem, isOpen, onClose, onLike }: ProblemDetailM
     });
   };
 
-  console.log('Problem images in modal:', problem.images);
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -74,7 +70,7 @@ const ProblemDetailModal = ({ problem, isOpen, onClose, onLike }: ProblemDetailM
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <Badge variant="outline" className="text-xs font-medium bg-blue-50 text-blue-700 border-blue-200">
+                <Badge variant="outline" className="text-xs font-medium bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/50">
                   {getTypeDisplayName(problem.type)}
                 </Badge>
                 <Badge className={`text-xs ${getStatusColor(problem.status)}`}>
@@ -88,29 +84,46 @@ const ProblemDetailModal = ({ problem, isOpen, onClose, onLike }: ProblemDetailM
           </div>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Imagens do problema */}
+        <div className="space-y-6 py-4">
+          {/* Imagens do problema com Carousel e Lightbox */}
           {problem.images && problem.images.length > 0 && (
             <div>
               <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Imagens</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {problem.images.map((image, index) => (
-                  <div key={index} className="relative">
-                    <img
-                      src={image.image_url}
-                      alt={`Imagem do problema ${index + 1}`}
-                      className="w-full h-48 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
-                      onError={(e) => {
-                        console.error('Erro ao carregar imagem:', image.image_url);
-                        e.currentTarget.style.display = 'none';
-                      }}
-                      onLoad={() => {
-                        console.log('Imagem carregada com sucesso:', image.image_url);
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
+              <Carousel className="w-full max-w-full" opts={{ loop: problem.images.length > 1 }}>
+                <CarouselContent>
+                  {problem.images.map((image, index) => (
+                    <CarouselItem key={index} className="md:basis-1/2">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <div className="relative cursor-pointer group overflow-hidden rounded-lg">
+                            <img
+                              src={image.image_url}
+                              alt={`Imagem do problema ${index + 1}`}
+                              className="w-full h-48 object-cover rounded-lg border border-gray-200 dark:border-gray-700 transition-transform group-hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="text-white text-sm font-bold">Ver imagem</span>
+                            </div>
+                          </div>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-[90vw] md:max-w-4xl h-[80vh] bg-transparent border-none shadow-none p-2 flex items-center justify-center">
+                          <img
+                            src={image.image_url}
+                            alt={`Imagem do problema ${index + 1} em tela cheia`}
+                            className="max-w-full max-h-full object-contain rounded-lg"
+                          />
+                        </DialogContent>
+                      </Dialog>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                {problem.images.length > 1 && (
+                   <>
+                     <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2" />
+                     <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2" />
+                   </>
+                )}
+              </Carousel>
             </div>
           )}
 
@@ -142,13 +155,13 @@ const ProblemDetailModal = ({ problem, isOpen, onClose, onLike }: ProblemDetailM
             </div>
             
             <div>
-              <h4 className="font-medium text-gray-900 dark:text-white mb-1">Curtidas</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white mb-1">Apoios</h4>
               <button
                 onClick={() => onLike(problem.id)}
                 className={`flex items-center space-x-1 transition-colors ${
                   problem.user_has_liked 
-                    ? 'text-blue-600 hover:text-blue-700' 
-                    : 'text-gray-500 hover:text-blue-600'
+                    ? 'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-500' 
+                    : 'text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400'
                 }`}
               >
                 <ArrowUp className={`w-4 h-4 ${problem.user_has_liked ? 'fill-current' : ''}`} />

@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface LocationData {
   latitude: number;
@@ -32,30 +31,25 @@ export const useLocation = () => {
 
       const { latitude, longitude } = position.coords;
       
-      // Reverse geocoding para obter endereço
+      // --- MODIFICAÇÃO AQUI: Geocodificação Reversa ---
+      // Substitua 'YOUR_OPENCAGE_API_KEY' pela sua chave da API OpenCage
+      const apiKey = '1d5e15795d734c598940b9e7b7468a79'; 
+      const geocodeUrl = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}&language=pt&pretty=1`;
+      
       try {
-        const response = await fetch(
-          `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=YOUR_API_KEY&language=pt&pretty=1`
-        );
+        const response = await fetch(geocodeUrl);
+        const data = await response.json();
         
-        if (response.ok) {
-          const data = await response.json();
-          const address = data.results[0]?.formatted || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
-          
-          setLocation({
-            latitude,
-            longitude,
-            address
-          });
-        } else {
-          setLocation({
-            latitude,
-            longitude,
-            address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
-          });
-        }
+        // Pega o endereço formatado a partir da resposta da API
+        const address = data.results[0]?.formatted || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+        
+        const newLocation = { latitude, longitude, address };
+        setLocation(newLocation);
+        console.log('Localização obtida e endereço traduzido:', newLocation);
+
       } catch (geocodeError) {
         console.error('Erro ao obter endereço:', geocodeError);
+        // Se a tradução falhar, usa as coordenadas como fallback
         setLocation({
           latitude,
           longitude,
@@ -64,7 +58,7 @@ export const useLocation = () => {
       }
     } catch (error) {
       console.error('Erro ao obter localização:', error);
-      setError('Não foi possível obter sua localização');
+      setError('Não foi possível obter sua localização. Verifique as permissões do navegador.');
     } finally {
       setLoading(false);
     }
