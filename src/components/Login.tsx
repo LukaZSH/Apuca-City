@@ -126,8 +126,9 @@ const Login = () => {
       <Card className="w-full max-w-md shadow-xl border-0 bg-card text-card-foreground">
         <CardHeader className="text-center pb-8">
           {/* --- MODIFICAÇÃO AQUI --- */}
-          <div className="mx-auto mb-6 w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center p-2">
-            <img src="/pwa-192x192.png" alt="Logo Apuca City" />
+          {/* Removemos o container azul e aplicamos o estilo diretamente na imagem */}
+          <div className="mx-auto mb-6 w-20 h-20">
+            <img src="/pwa-192x192.png" alt="Logo Apuca City" className="w-full h-full rounded-2xl" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">Apuca City</h1>
           <p className="text-muted-foreground text-sm">

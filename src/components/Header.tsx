@@ -48,9 +48,10 @@ const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfi
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
-            {/* --- MODIFICAÇÃO AQUI --- */}
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 flex items-center justify-center">
+              {/* --- MODIFICAÇÃO AQUI --- */}
+              {/* Removemos o container e deixamos a imagem se adaptar */}
+              <div className="w-8 h-8">
                 <img src="/pwa-192x192.png" alt="Logo Apuca City" className="h-full w-full" />
               </div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
