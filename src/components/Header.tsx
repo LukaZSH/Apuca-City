@@ -13,6 +13,8 @@ import { ThemeToggle } from './ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useAdmin } from '@/hooks/useAdmin';
+import { LogOut, User as UserIcon, FileText, PanelTop } from 'lucide-react';
+import InstallPwaButton from './InstallPwaButton'; // Importa o novo botão
 
 interface HeaderProps {
   onNewReport: () => void;
@@ -44,51 +46,49 @@ const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfi
   };
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow border-b border-gray-200 dark:border-gray-700">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="bg-white dark:bg-gray-800 shadow border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-3">
-              {/* --- MODIFICAÇÃO AQUI --- */}
-              {/* Removemos o container e deixamos a imagem se adaptar */}
-              <div className="w-8 h-8">
-                <img src="/pwa-192x192.png" alt="Logo Apuca City" className="h-full w-full" />
-              </div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                Apuca City
-              </h1>
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full dark:bg-slate-700">
+               <img src="/pwa-192x192.png" alt="Logo Apuca City" className="h-full w-full rounded-full" />
             </div>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate">
+              Apuca City
+            </h1>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <InstallPwaButton />
             <ThemeToggle />
             
-            <Button 
-              onClick={onNewReport}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Novo Relato
-            </Button>
-            
-            {onShowUserProblems && (
-              <Button variant="outline" onClick={onShowUserProblems}>
-                Meus Relatos
+            {/* Botões que aparecem apenas em telas maiores (desktop) */}
+            <div className="hidden md:flex items-center space-x-4">
+              <Button onClick={onNewReport} className="bg-blue-600 hover:bg-blue-700 text-white">
+                Novo Relato
               </Button>
-            )}
+              
+              {onShowUserProblems && (
+                <Button variant="outline" onClick={onShowUserProblems}>
+                  Meus Relatos
+                </Button>
+              )}
+              
+              {isAdmin && onShowAdminPanel && (
+                <Button 
+                  variant="outline" 
+                  onClick={onShowAdminPanel}
+                  className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                >
+                  <Badge variant="secondary" className="mr-2 bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300">
+                    Admin
+                  </Badge>
+                  Painel
+                </Button>
+              )}
+            </div>
             
-            {isAdmin && onShowAdminPanel && (
-              <Button 
-                variant="outline" 
-                onClick={onShowAdminPanel}
-                className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
-              >
-                <Badge variant="secondary" className="mr-2 bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300">
-                  Admin
-                </Badge>
-                Painel Admin
-              </Button>
-            )}
-            
+            {/* Menu suspenso para todas as opções, incluindo as que estão escondidas em telas menores */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -106,16 +106,37 @@ const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfi
                   </div>
                 </div>
                 <DropdownMenuSeparator />
-                {onShowProfile && (
-                  <>
-                    <DropdownMenuItem onClick={onShowProfile}>
-                      Meu Perfil
+
+                {/* Itens que aparecem apenas no menu em telas pequenas (celular) */}
+                <div className="md:hidden">
+                    <DropdownMenuItem onClick={onNewReport}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        <span>Novo Relato</span>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                  </>
+                    {onShowUserProblems && (
+                        <DropdownMenuItem onClick={onShowUserProblems}>
+                            <FileText className="mr-2 h-4 w-4" />
+                            <span>Meus Relatos</span>
+                        </DropdownMenuItem>
+                    )}
+                     {isAdmin && onShowAdminPanel && (
+                        <DropdownMenuItem onClick={onShowAdminPanel}>
+                            <PanelTop className="mr-2 h-4 w-4" />
+                            <span>Painel Admin</span>
+                        </DropdownMenuItem>
+                    )}
+                   <DropdownMenuSeparator />
+                </div>
+                
+                {onShowProfile && (
+                    <DropdownMenuItem onClick={onShowProfile}>
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      <span>Meu Perfil</span>
+                    </DropdownMenuItem>
                 )}
                 <DropdownMenuItem onClick={signOut}>
-                  Sair
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sair</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
