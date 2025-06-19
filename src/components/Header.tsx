@@ -13,8 +13,8 @@ import { ThemeToggle } from './ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useAdmin } from '@/hooks/useAdmin';
-import { LogOut, User as UserIcon, FileText, PanelTop } from 'lucide-react';
-import InstallPwaButton from './InstallPwaButton'; // Importa o novo botão
+import { LogOut, User as UserIcon, FileText, PanelTop, Download } from 'lucide-react';
+import InstallPwaButton from './InstallPwaButton'; // 1. Importa o novo botão
 
 interface HeaderProps {
   onNewReport: () => void;
@@ -59,10 +59,9 @@ const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfi
           </div>
           
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <InstallPwaButton />
+            <InstallPwaButton /> {/* 2. Adiciona o botão aqui */}
             <ThemeToggle />
             
-            {/* Botões que aparecem apenas em telas maiores (desktop) */}
             <div className="hidden md:flex items-center space-x-4">
               <Button onClick={onNewReport} className="bg-blue-600 hover:bg-blue-700 text-white">
                 Novo Relato
@@ -88,7 +87,6 @@ const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfi
               )}
             </div>
             
-            {/* Menu suspenso para todas as opções, incluindo as que estão escondidas em telas menores */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -107,7 +105,6 @@ const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfi
                 </div>
                 <DropdownMenuSeparator />
 
-                {/* Itens que aparecem apenas no menu em telas pequenas (celular) */}
                 <div className="md:hidden">
                     <DropdownMenuItem onClick={onNewReport}>
                         <FileText className="mr-2 h-4 w-4" />

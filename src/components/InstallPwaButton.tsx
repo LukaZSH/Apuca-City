@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Download } from 'lucide-react';
 
-// Tipagem para o evento 'beforeinstallprompt'
+// Tipagem para o evento 'beforeinstallprompt' que os navegadores disparam
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
   readonly userChoice: Promise<{
@@ -17,14 +17,16 @@ const InstallPwaButton = () => {
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Previne o mini-infobar de aparecer no Chrome
+      // Previne o comportamento padrão do navegador
       e.preventDefault();
-      // Guarda o evento para que possa ser acionado mais tarde.
+      // Guarda o evento para que possamos acioná-lo com nosso botão
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
 
+    // Escuta o evento que indica que o app pode ser instalado
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
+    // Limpa o listener quando o componente é desmontado
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
@@ -34,23 +36,26 @@ const InstallPwaButton = () => {
     if (!deferredPrompt) {
       return;
     }
-    // Mostra o prompt de instalação
+    // Mostra o prompt de instalação nativo do navegador
     deferredPrompt.prompt();
     // Espera o usuário responder ao prompt
     const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
+    console.log(`Resposta do usuário ao prompt de instalação: ${outcome}`);
     // O prompt só pode ser usado uma vez, então limpamos o estado
     setDeferredPrompt(null);
   };
 
+  // Se não houver prompt, o botão não é renderizado.
+  // Isso acontece se o app já estiver instalado ou se o navegador não suportar.
   if (!deferredPrompt) {
-    return null; // Não mostra o botão se o app já foi instalado ou não é instalável
+    return null;
   }
 
   return (
     <Button
       onClick={handleInstallClick}
-      className="bg-green-600 hover:bg-green-700 text-white animate-pulse"
+      className="bg-green-600 hover:bg-green-700 text-white animate-pulse hidden sm:flex"
+      size="sm"
     >
       <Download className="mr-2 h-4 w-4" />
       Instalar App
