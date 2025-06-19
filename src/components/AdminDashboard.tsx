@@ -1,4 +1,4 @@
-import React from 'react'; // Adicionado import do React para React.useMemo
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -62,25 +62,22 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
   
-  // MODIFICAÇÃO: Preparar dados traduzidos para o gráfico de status
-  // Usar React.useMemo para otimizar, recalculando apenas quando stats.problems_by_status mudar.
   const translatedProblemsByStatus = React.useMemo(() => {
-    if (!stats?.problems_by_status) {
-      return [];
-    }
+    if (!stats?.problems_by_status) return [];
     return stats.problems_by_status.map(item => ({
       ...item,
-      statusLabel: getStatusText(item.status) // Adiciona um novo campo com o rótulo traduzido
+      statusLabel: getStatusText(item.status)
     }));
-  }, [stats?.problems_by_status]); // Dependência do useMemo
+  }, [stats?.problems_by_status]);
+
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-background">
         <Header onNewReport={onNewReport} />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center h-64">
-            <div className="text-gray-500">Carregando painel administrativo...</div>
+            <div className="text-muted-foreground">Carregando painel administrativo...</div>
           </div>
         </main>
       </div>
@@ -88,16 +85,16 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900"> {/* Alterado para bg-gray-50 dark:bg-gray-900 para consistência com o loading */}
+    <div className="min-h-screen bg-background">
       <Header onNewReport={onNewReport} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-2xl font-bold text-foreground mb-2">
               Painel Administrativo
             </h2>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-muted-foreground">
               Gerencie problemas e visualize estatísticas da cidade
             </p>
           </div>
@@ -111,29 +108,29 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
         </div>
 
         {/* Estatísticas Gerais */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Problemas</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total de Problemas</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.total_problems || 0}</div>
+              <div className="text-2xl font-bold text-foreground">{stats?.total_problems || 0}</div>
             </CardContent>
           </Card>
           
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Problemas Recentes</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Problemas Recentes</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats?.recent_problems || 0}</div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Últimos 7 dias</p>
+              <p className="text-xs text-muted-foreground">Últimos 7 dias</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Pendentes</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Pendentes</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
@@ -144,7 +141,7 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Resolvidos</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Resolvidos</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
@@ -158,16 +155,14 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <Card>
             <CardHeader>
-              <CardTitle>Problemas por Status</CardTitle>
+              <CardTitle className="text-foreground">Problemas por Status</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                {/* MODIFICAÇÃO: Passar os dados traduzidos para o gráfico */}
                 <BarChart data={translatedProblemsByStatus}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  {/* MODIFICAÇÃO: Usar o campo traduzido para o eixo X */}
-                  <XAxis dataKey="statusLabel" /> 
-                  <YAxis allowDecimals={false} /> {/* Adicionado allowDecimals={false} para o eixo Y se a contagem for sempre inteira */}
+                  <XAxis dataKey="statusLabel" />
+                  <YAxis allowDecimals={false} />
                   <Tooltip />
                   <Bar dataKey="count" fill="#3B82F6" />
                 </BarChart>
@@ -177,7 +172,7 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
 
           <Card>
             <CardHeader>
-              <CardTitle>Problemas por Tipo</CardTitle>
+              <CardTitle className="text-foreground">Problemas por Tipo</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -206,12 +201,13 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
         {/* Lista de Problemas para Gerenciar */}
         <Card>
           <CardHeader>
-            <CardTitle>Gerenciar Problemas</CardTitle>
+            <CardTitle className="text-foreground">Gerenciar Problemas</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {problems.map((problem) => (
-                <div key={problem.id} className="flex items-center justify-between p-4 border rounded-lg dark:border-gray-700">
+                // --- MODIFICAÇÃO AQUI ---
+                <div key={problem.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg dark:border-gray-700 gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <Badge variant="outline" className="text-xs">
@@ -221,18 +217,18 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
                         {getStatusText(problem.status)}
                       </Badge>
                     </div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">{problem.title}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{problem.description}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{problem.location_address}</p>
+                    <h4 className="font-medium text-foreground">{problem.title}</h4>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{problem.description}</p>
+                    <p className="text-xs text-muted-foreground/80 mt-1">{problem.location_address}</p>
                   </div>
-                  <div className="ml-4 flex gap-2">
+                  <div className="flex-shrink-0 flex items-center gap-2 self-end md:self-center">
                     <Select
                       value={problem.status}
                       onValueChange={(value: 'pending' | 'in_progress' | 'resolved') => 
                         handleStatusChange(problem.id, value)
                       }
                     >
-                      <SelectTrigger className="w-40">
+                      <SelectTrigger className="w-[150px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
