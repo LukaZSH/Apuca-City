@@ -7,13 +7,15 @@ import { useAdmin } from '@/hooks/useAdmin';
 import { useProblems } from '@/hooks/useProblems';
 import Header from './Header';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { Users } from 'lucide-react';
 
 interface AdminDashboardProps {
   onNewReport: () => void;
   onBackToDashboard: () => void;
+  onManageUsers: () => void; // Nova prop para navegar para a página de gerenciamento
 }
 
-const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps) => {
+const AdminDashboard = ({ onNewReport, onBackToDashboard, onManageUsers }: AdminDashboardProps) => {
   const { stats, updateProblemStatus, deleteProblem } = useAdmin();
   const { problems, loading, refetch } = useProblems();
 
@@ -104,6 +106,14 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
             className="h-10"
           >
             Voltar ao Dashboard
+          </Button>
+        </div>
+
+        {/* Botão para Gerenciar Usuários */}
+        <div className="mb-8">
+          <Button onClick={onManageUsers}>
+            <Users className="mr-2 h-4 w-4" />
+            Gerenciar Usuários
           </Button>
         </div>
 
@@ -206,7 +216,6 @@ const AdminDashboard = ({ onNewReport, onBackToDashboard }: AdminDashboardProps)
           <CardContent>
             <div className="space-y-4">
               {problems.map((problem) => (
-                // --- MODIFICAÇÃO AQUI ---
                 <div key={problem.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg dark:border-gray-700 gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">

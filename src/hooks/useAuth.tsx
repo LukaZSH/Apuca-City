@@ -6,6 +6,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isVisitor: boolean; // Novo estado
+  setVisitorMode: (isVisiting: boolean) => void; // Nova função
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -19,27 +21,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isVisitor, setIsVisitor] = useState(false); // Estado para o modo visitante
 
   useEffect(() => {
-    // Listener para mudanças no estado de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session);
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
-
-        // Se o evento for PASSWORD_RECOVERY, o usuário clicou no link do e-mail
-        // e foi redirecionado de volta para o app. A sessão conterá o usuário,
-        // indicando que ele está pronto para atualizar a senha.
-        if (event === 'PASSWORD_RECOVERY') {
-          console.log('Password recovery event detected.');
-          // A lógica de roteamento em App.tsx cuidará de mostrar a página correta.
+        if (session?.user) {
+          setIsVisitor(false); // Se o usuário logar, ele não é mais um visitante
         }
+        setLoading(false);
       }
     );
 
-    // Verificar sessão existente ao carregar o app
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -49,30 +44,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName?: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          full_name: fullName
-        }
-      }
-    });
-    
-    return { error };
-  };
-
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-    
-    return { error };
+  const setVisitorMode = (isVisiting: boolean) => {
+    setIsVisitor(isVisiting);
   };
 
   const signOut = async () => {
@@ -80,29 +53,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (error) {
       console.error('Error signing out:', error);
     }
+    setIsVisitor(false); // Garante que ao sair, o modo visitante também é desativado
   };
 
-  // Função para solicitar a redefinição de senha
-  const requestPasswordReset = async (email: string) => {
-    // A URL para onde o usuário será redirecionado após clicar no link
-    const redirectTo = `${window.location.origin}/update-password`;
-    
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo,
-    });
+  // ... (suas outras funções: signUp, signIn, requestPasswordReset, updateUserPassword) ...
+  const signUp = async (email: string, password: string, fullName?: string) => {
+    const redirectUrl = `${window.location.origin}/`;
+    const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: redirectUrl, data: { full_name: fullName } } });
     return { error };
   };
-
-  // Função para o usuário logado (via link de recuperação) atualizar sua senha
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error };
+  };
+  const requestPasswordReset = async (email: string) => {
+    const redirectTo = `${window.location.origin}/update-password`;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    return { error };
+  };
   const updateUserPassword = async (password: string) => {
     const { data, error } = await supabase.auth.updateUser({ password });
     return { error };
   };
 
+
   const value = {
     user,
     session,
     loading,
+    isVisitor,
+    setVisitorMode,
     signUp,
     signIn,
     signOut,

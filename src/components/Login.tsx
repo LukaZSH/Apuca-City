@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { Separator } from '@/components/ui/separator';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,12 +17,16 @@ const Login = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
 
-  const { signIn, signUp, requestPasswordReset } = useAuth();
+  // Adicionamos setVisitorMode do nosso hook de autenticação
+  const { signIn, signUp, requestPasswordReset, setVisitorMode } = useAuth();
+
+  const handleVisitorClick = () => {
+    setVisitorMode(true);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       if (isSignUp) {
         const { error } = await signUp(email, password, fullName);
@@ -46,8 +51,8 @@ const Login = () => {
           }
         }
       }
-    } catch (error) {
-      toast.error('Erro inesperado. Tente novamente.');
+    } catch (error: any) {
+      toast.error(error.message || 'Erro inesperado.');
       console.error('Auth error:', error);
     } finally {
       setIsLoading(false);
@@ -72,6 +77,7 @@ const Login = () => {
     setIsLoading(false);
   };
 
+  // JSX para o formulário de "Esqueci minha senha" (mantido como antes)
   if (showForgotPassword) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -121,12 +127,11 @@ const Login = () => {
     );
   }
 
+  // JSX principal de Login/Cadastro
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-xl border-0 bg-card text-card-foreground">
         <CardHeader className="text-center pb-8">
-          {/* --- MODIFICAÇÃO AQUI --- */}
-          {/* Removemos o container azul e aplicamos o estilo diretamente na imagem */}
           <div className="mx-auto mb-6 w-20 h-20">
             <img src="/pwa-192x192.png" alt="Logo Apuca City" className="w-full h-full rounded-2xl" />
           </div>
@@ -200,7 +205,7 @@ const Login = () => {
             </Button>
           </form>
           
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
@@ -210,6 +215,29 @@ const Login = () => {
               {isSignUp ? 'Já tem uma conta? Faça login' : 'Não tem conta? Cadastre-se'}
             </button>
           </div>
+
+          {/* --- MODIFICAÇÃO AQUI --- */}
+          {/* Adicionamos um separador e o botão de visitante */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">
+                OU
+              </span>
+            </div>
+          </div>
+
+          <Button
+            variant="outline"
+            onClick={handleVisitorClick}
+            className="w-full"
+            disabled={isLoading}
+          >
+            Entrar como visitante
+          </Button>
+
         </CardContent>
       </Card>
     </div>

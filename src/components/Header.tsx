@@ -13,8 +13,8 @@ import { ThemeToggle } from './ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useAdmin } from '@/hooks/useAdmin';
-import { LogOut, User as UserIcon, FileText, PanelTop } from 'lucide-react';
-import InstallPwaButton from './InstallPwaButton'; // Importa o novo botão
+import { LogOut, User as UserIcon, FileText, PanelTop, LogIn } from 'lucide-react';
+import InstallPwaButton from './InstallPwaButton';
 
 interface HeaderProps {
   onNewReport: () => void;
@@ -24,9 +24,13 @@ interface HeaderProps {
 }
 
 const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfile }: HeaderProps) => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isVisitor, setVisitorMode } = useAuth();
   const { profile } = useProfile();
   const { isAdmin } = useAdmin();
+
+  const handleExitVisitorMode = () => {
+    setVisitorMode(false);
+  };
 
   const getUserDisplayName = () => {
     if (profile?.full_name) {
@@ -59,87 +63,96 @@ const Header = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfi
           </div>
           
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <InstallPwaButton />
-            <ThemeToggle />
-            
-            {/* Botões que aparecem apenas em telas maiores (desktop) */}
-            <div className="hidden md:flex items-center space-x-4">
-              <Button onClick={onNewReport} className="bg-blue-600 hover:bg-blue-700 text-white">
-                Novo Relato
-              </Button>
-              
-              {onShowUserProblems && (
-                <Button variant="outline" onClick={onShowUserProblems}>
-                  Meus Relatos
+            {isVisitor ? (
+              <>
+                <Button onClick={handleExitVisitorMode} variant="outline" size="sm">Sair</Button>
+                <Button onClick={handleExitVisitorMode} className="bg-blue-600 hover:bg-blue-700 text-white" size="sm">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login / Cadastro
                 </Button>
-              )}
-              
-              {isAdmin && onShowAdminPanel && (
-                <Button 
-                  variant="outline" 
-                  onClick={onShowAdminPanel}
-                  className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
-                >
-                  <Badge variant="secondary" className="mr-2 bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300">
-                    Admin
-                  </Badge>
-                  Painel
-                </Button>
-              )}
-            </div>
-            
-            {/* Menu suspenso para todas as opções, incluindo as que estão escondidas em telas menores */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={profile?.avatar_url || ''} />
-                    <AvatarFallback>{getUserInitials()}</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <div className="flex items-center justify-start gap-2 p-2">
-                  <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-medium text-sm">{getUserDisplayName()}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
-                  </div>
-                </div>
-                <DropdownMenuSeparator />
-
-                {/* Itens que aparecem apenas no menu em telas pequenas (celular) */}
-                <div className="md:hidden">
-                    <DropdownMenuItem onClick={onNewReport}>
-                        <FileText className="mr-2 h-4 w-4" />
-                        <span>Novo Relato</span>
-                    </DropdownMenuItem>
-                    {onShowUserProblems && (
-                        <DropdownMenuItem onClick={onShowUserProblems}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            <span>Meus Relatos</span>
-                        </DropdownMenuItem>
-                    )}
-                     {isAdmin && onShowAdminPanel && (
-                        <DropdownMenuItem onClick={onShowAdminPanel}>
-                            <PanelTop className="mr-2 h-4 w-4" />
-                            <span>Painel Admin</span>
-                        </DropdownMenuItem>
-                    )}
-                   <DropdownMenuSeparator />
+              </>
+            ) : (
+              <>
+                <InstallPwaButton />
+                <ThemeToggle />
+                
+                <div className="hidden md:flex items-center space-x-4">
+                  <Button onClick={onNewReport} className="bg-blue-600 hover:bg-blue-700 text-white">
+                    Novo Relato
+                  </Button>
+                  
+                  {onShowUserProblems && (
+                    <Button variant="outline" onClick={onShowUserProblems}>
+                      Meus Relatos
+                    </Button>
+                  )}
+                  
+                  {isAdmin && onShowAdminPanel && (
+                    <Button 
+                      variant="outline" 
+                      onClick={onShowAdminPanel}
+                      className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                    >
+                      <Badge variant="secondary" className="mr-2 bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300">
+                        Admin
+                      </Badge>
+                      Painel
+                    </Button>
+                  )}
                 </div>
                 
-                {onShowProfile && (
-                    <DropdownMenuItem onClick={onShowProfile}>
-                      <UserIcon className="mr-2 h-4 w-4" />
-                      <span>Meu Perfil</span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={profile?.avatar_url || ''} />
+                        <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <div className="flex items-center justify-start gap-2 p-2">
+                      <div className="flex flex-col space-y-1 leading-none">
+                        <p className="font-medium text-sm">{getUserDisplayName()}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+
+                    <div className="md:hidden">
+                        <DropdownMenuItem onClick={onNewReport}>
+                            <FileText className="mr-2 h-4 w-4" />
+                            <span>Novo Relato</span>
+                        </DropdownMenuItem>
+                        {onShowUserProblems && (
+                            <DropdownMenuItem onClick={onShowUserProblems}>
+                                <FileText className="mr-2 h-4 w-4" />
+                                <span>Meus Relatos</span>
+                            </DropdownMenuItem>
+                        )}
+                         {isAdmin && onShowAdminPanel && (
+                            <DropdownMenuItem onClick={onShowAdminPanel}>
+                                <PanelTop className="mr-2 h-4 w-4" />
+                                <span>Painel Admin</span>
+                            </DropdownMenuItem>
+                        )}
+                       <DropdownMenuSeparator />
+                    </div>
+                    
+                    {onShowProfile && (
+                        <DropdownMenuItem onClick={onShowProfile}>
+                          <UserIcon className="mr-2 h-4 w-4" />
+                          <span>Meu Perfil</span>
+                        </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={signOut}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Sair</span>
                     </DropdownMenuItem>
-                )}
-                <DropdownMenuItem onClick={signOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sair</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
           </div>
         </div>
       </div>

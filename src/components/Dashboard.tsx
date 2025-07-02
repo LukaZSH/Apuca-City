@@ -1,12 +1,12 @@
-// Arquivo: src/components/Dashboard.tsx
-
 import React, { useState } from 'react';
 import { useProblems, Problem } from '@/hooks/useProblems';
+import { useAuth } from '@/hooks/useAuth';
 import ProblemCard from './ProblemCard';
 import ProblemDetailModal from './ProblemDetailModal';
 import Header from './Header';
 import { Input } from '@/components/ui/input';
 import { FaSearch } from 'react-icons/fa';
+import { toast } from 'sonner';
 
 interface DashboardProps {
   onNewReport: () => void;
@@ -17,6 +17,7 @@ interface DashboardProps {
 
 const Dashboard = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowProfile }: DashboardProps) => {
   const { problems, loading, toggleLike } = useProblems();
+  const { isVisitor } = useAuth();
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,8 +31,16 @@ const Dashboard = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowPr
     setIsModalOpen(false);
     setSelectedProblem(null);
   };
+
+  // Função "wrapper" que verifica se é visitante antes de dar o like
+  const handleLikeWrapper = (problemId: string) => {
+    if (isVisitor) {
+      toast.info("Você precisa criar uma conta para apoiar um relato.");
+      return;
+    }
+    toggleLike(problemId);
+  };
   
-  // Filtra os problemas com base no título, descrição ou endereço
   const filteredProblems = problems.filter(problem => 
     problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     problem.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -40,7 +49,7 @@ const Dashboard = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowPr
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-background">
         <Header 
           onNewReport={onNewReport}
           onShowUserProblems={onShowUserProblems}
@@ -49,7 +58,7 @@ const Dashboard = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowPr
         />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-center h-64">
-            <div className="text-gray-500 dark:text-gray-400">Carregando problemas...</div>
+            <div className="text-muted-foreground">Carregando problemas...</div>
           </div>
         </main>
       </div>
@@ -57,7 +66,7 @@ const Dashboard = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowPr
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       <Header 
         onNewReport={onNewReport}
         onShowUserProblems={onShowUserProblems}
@@ -67,15 +76,14 @@ const Dashboard = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowPr
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          <h2 className="text-2xl font-bold text-foreground mb-2">
             Problemas da Cidade
           </h2>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-muted-foreground">
             Veja os problemas relatados pela comunidade e ajude a melhorar nossa cidade
           </p>
         </div>
 
-        {/* Campo de Busca */}
         <div className="mb-6 relative">
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <Input 
@@ -89,10 +97,10 @@ const Dashboard = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowPr
 
         {filteredProblems.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400 mb-4">
+            <p className="text-muted-foreground mb-4">
               {searchTerm ? 'Nenhum problema encontrado para sua busca.' : 'Nenhum problema foi relatado ainda.'}
             </p>
-            {!searchTerm && (
+            {!searchTerm && !isVisitor && (
                 <button
                 onClick={onNewReport}
                 className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
@@ -107,7 +115,7 @@ const Dashboard = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowPr
               <ProblemCard
                 key={problem.id}
                 problem={problem}
-                onLike={toggleLike}
+                onLike={handleLikeWrapper}
                 onClick={handleProblemClick}
               />
             ))}
@@ -119,7 +127,7 @@ const Dashboard = ({ onNewReport, onShowUserProblems, onShowAdminPanel, onShowPr
         problem={selectedProblem}
         isOpen={isModalOpen}
         onClose={closeModal}
-        onLike={toggleLike}
+        onLike={handleLikeWrapper}
       />
     </div>
   );
