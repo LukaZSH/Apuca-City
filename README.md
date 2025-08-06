@@ -33,13 +33,16 @@ A aplicação foi construída como um **Progressive Web App (PWA)**, garantindo 
 
 ## 🖼️ Telas do Projeto
 
-| Tela de Login | Dashboard Principal |
-| :---: | :---: |
-| ![Tela de Login do Apuca City]([COLE A URL DA IMAGEM AQUI]) | ![Dashboard Principal do Apuca City]([COLE A URL DA IMAGEM AQUI]) |
+### Tela de Login
 
-| Painel do Administrador | Versão Mobile |
-| :---: | :---: |
-| ![Painel do Administrador com Gráficos]([COLE A URL DA IMAGEM AQUI]) | ![Apuca City rodando em um celular]([COLE A URL DA IMAGEM AQUI]) |
+
+### Dashboard Principal
+
+
+### Painel do Administrador
+
+
+### Versão Mobile
 
 
 ---
@@ -154,4 +157,4 @@ Para que a aplicação funcione corretamente, é necessário configurar as polí
 
 Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-
+---
