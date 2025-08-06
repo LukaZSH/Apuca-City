@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
+
+// 1. Acessa a chave de API a partir das variáveis de ambiente
+const OPENCAGE_API_KEY = import.meta.env.VITE_OPENCAGE_API_KEY;
 
 interface LocationData {
+  address: string;
   latitude: number;
   longitude: number;
-  address?: string;
 }
 
 export const useLocation = () => {
@@ -11,73 +15,63 @@ export const useLocation = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getCurrentLocation = async () => {
-    if (!navigator.geolocation) {
-      setError('Geolocalização não é suportada neste navegador');
-      return;
-    }
-
+  const getCurrentLocation = useCallback(() => {
     setLoading(true);
     setError(null);
 
-    try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 60000
-        });
-      });
-
-      const { latitude, longitude } = position.coords;
-      
-      // --- MODIFICAÇÃO AQUI: Geocodificação Reversa ---
-      // Substitua 'YOUR_OPENCAGE_API_KEY' pela sua chave da API OpenCage
-      const apiKey = '1d5e15795d734c598940b9e7b7468a79'; 
-      const geocodeUrl = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}&language=pt&pretty=1`;
-      
-      try {
-        const response = await fetch(geocodeUrl);
-        const data = await response.json();
-        
-        // Pega o endereço formatado a partir da resposta da API
-        const address = data.results[0]?.formatted || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
-        
-        const newLocation = { latitude, longitude, address };
-        setLocation(newLocation);
-        console.log('Localização obtida e endereço traduzido:', newLocation);
-
-      } catch (geocodeError) {
-        console.error('Erro ao obter endereço:', geocodeError);
-        // Se a tradução falhar, usa as coordenadas como fallback
-        setLocation({
-          latitude,
-          longitude,
-          address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao obter localização:', error);
-      setError('Não foi possível obter sua localização. Verifique as permissões do navegador.');
-    } finally {
+    if (!navigator.geolocation) {
+      const msg = "Geolocalização não é suportada pelo seu navegador.";
+      toast.error(msg);
+      setError(msg);
       setLoading(false);
+      return;
     }
-  };
 
-  const setManualLocation = (latitude: number, longitude: number, address?: string) => {
-    setLocation({
-      latitude,
-      longitude,
-      address: address || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
-    });
-  };
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        
+        // Verifica se a chave de API foi configurada no .env
+        if (!OPENCAGE_API_KEY) {
+          const msg = "A chave da API de geolocalização não foi configurada.";
+          console.error(msg);
+          toast.error("Erro de configuração do servidor.");
+          setError(msg);
+          setLocation({ address: 'Endereço não disponível', latitude, longitude });
+          setLoading(false);
+          return;
+        }
 
-  return {
-    location,
-    loading,
-    error,
-    getCurrentLocation,
-    setManualLocation,
-    clearLocation: () => setLocation(null)
-  };
+        const geocodeUrl = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${OPENCAGE_API_KEY}&language=pt&pretty=1`;
+        
+        try {
+          const response = await fetch(geocodeUrl);
+          const data = await response.json();
+
+          if (response.ok && data.results && data.results.length > 0) {
+            const formattedAddress = data.results[0].formatted;
+            setLocation({ address: formattedAddress, latitude, longitude });
+          } else {
+            throw new Error(data.status.message || 'Não foi possível obter o endereço.');
+          }
+        } catch (err: any) {
+          const msg = `Erro ao converter coordenadas em endereço: ${err.message}`;
+          toast.error(msg);
+          setError(msg);
+          setLocation({ address: 'Erro ao obter endereço', latitude, longitude });
+        } finally {
+          setLoading(false);
+        }
+      },
+      (err) => {
+        const msg = `Erro ao obter localização: ${err.message}`;
+        toast.error(msg);
+        setError(msg);
+        setLoading(false);
+      }
+    );
+  }, []);
+
+  return { location, loading, error, getCurrentLocation };
 };
