@@ -1,7 +1,5 @@
 # Apuca City - Plataforma de Relatos Urbanos
 
-![Ícone do Apuca City](https://raw.githubusercontent.com/LukaZSH/Apuca-City/main/public/pwa-512x512.png)
-
 **Apuca City** é uma aplicação web progressiva (PWA) desenvolvida para permitir que os cidadãos de Apucarana, PR, relatem problemas urbanos de forma colaborativa. A plataforma centraliza os relatos, permite o acompanhamento do status por parte da comunidade e oferece um painel administrativo para a gestão e resolução dos problemas.
 
 **[Acesse a demonstração ao vivo](https://apuca-city.vercel.app/)**
