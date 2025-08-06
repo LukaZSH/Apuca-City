@@ -74,29 +74,6 @@ O sistema possui três níveis de acesso com funcionalidades distintas:
 * **Gerenciar Status:** Alterar o status de um problema (Pendente, Em Andamento, Resolvido).
 * **Gerenciar Usuários:** Visualizar a lista de todos os usuários cadastrados e excluir contas (ex: em caso de abuso da plataforma).
 
----
-
-## 🛠️ Tecnologias Utilizadas
-
-Este projeto foi construído com as seguintes tecnologias:
-
-* **Frontend:**
-    * **React** com **Vite**
-    * **TypeScript**
-    * **Tailwind CSS** para estilização
-    * **Shadcn/ui** para componentes de UI
-    * **React Query** para gerenciamento de estado do servidor
-    * **Recharts** para visualização de dados (gráficos)
-    * **Zod** para validação de esquemas
-* **Backend & Banco de Dados (BaaS):**
-    * **Supabase**
-        * **Authentication:** Gerenciamento de usuários e segurança.
-        * **PostgreSQL Database:** Armazenamento de dados com Row Level Security (RLS).
-        * **Storage:** Hospedagem de imagens dos relatos.
-        * **Edge Functions (Deno):** Funções serverless para operações seguras, como a exclusão de usuários.
-* **Deploy:**
-    * **Vercel** para o frontend.
-    * **Supabase** para o backend e funções.
 
 ---
 
