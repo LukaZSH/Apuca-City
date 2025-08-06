@@ -6,20 +6,6 @@
 
 **[Acesse a demonstração ao vivo](https://apuca-city.vercel.app/)**
 
----
-
-## 📋 Índice
-
-* [Sobre o Projeto](#-sobre-o-projeto)
-* [🖼️ Telas do Projeto](#️-telas-do-projeto)
-* [✨ Funcionalidades](#-funcionalidades)
-    * [Visitante (Não Autenticado)](#visitante-não-autenticado)
-    * [Cidadão (Usuário Autenticado)](#cidadão-usuário-autenticado)
-    * [Administrador](#administrador)
-* [🛠️ Tecnologias Utilizadas](#️-tecnologias-utilizadas)
-* [🚀 Como Executar o Projeto Localmente](#-como-executar-o-projeto-localmente)
-* [🔧 Configuração do Supabase](#-configuração-do-supabase)
-* [📄 Licença](#-licença)
 
 ---
 
@@ -34,15 +20,19 @@ A aplicação foi construída como um **Progressive Web App (PWA)**, garantindo 
 ## 🖼️ Telas do Projeto
 
 ### Tela de Login
+<img width="785" height="702" alt="image" src="https://github.com/user-attachments/assets/4b88f942-3e88-437b-847b-60211282a5ab" />
 
 
 ### Dashboard Principal
+<img width="1340" height="778" alt="Hub dark" src="https://github.com/user-attachments/assets/a26d53c7-b75f-42a3-ae89-758cb7b37cfc" />
 
 
 ### Painel do Administrador
+<img width="1308" height="925" alt="Admin light" src="https://github.com/user-attachments/assets/66f2f946-41fb-48f7-ab9f-ecd7540803f0" />
 
 
 ### Versão Mobile
+![Img no celular](https://github.com/user-attachments/assets/09a3735a-0c4d-4e16-ac9e-8ffe637a1eaa)
 
 
 ---
